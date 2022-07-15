@@ -1,0 +1,9 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="星链激光制管机控制软件.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="SkinName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">btnSkin_0</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
