@@ -490,7 +490,6 @@
             this.btnMove_Right.TabIndex = 10;
             this.btnMove_Right.TabStop = false;
             this.btnMove_Right.ToolTipText = "右移";
-            this.btnMove_Right.Click += new System.EventHandler(this.btnMove_Right_Click);
             this.btnMove_Right.MouseDown += new System.Windows.Forms.MouseEventHandler(this.btnMove_Right_MouseDown);
             this.btnMove_Right.MouseEnter += new System.EventHandler(this.btnMove_MouseEnter);
             this.btnMove_Right.MouseLeave += new System.EventHandler(this.btnMove_MouseLeave);
@@ -744,7 +743,6 @@
             this.panel10.Name = "panel10";
             this.panel10.Size = new System.Drawing.Size(115, 66);
             this.panel10.TabIndex = 15;
-            this.panel10.Paint += new System.Windows.Forms.PaintEventHandler(this.panel10_Paint);
             // 
             // btnRedlightSwitch
             // 
@@ -836,7 +834,6 @@
             this.txtPower.TextModel = CustomControl.MTextBox.TextFormatModel.Integer;
             this.txtPower.TextPadding = new System.Windows.Forms.Padding(5, 2, 5, 8);
             this.txtPower.UseSystemPasswordChar = false;
-            this.txtPower.Load += new System.EventHandler(this.txtPower_Load);
             // 
             // label7
             // 
