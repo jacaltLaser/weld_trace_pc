@@ -1473,10 +1473,42 @@ namespace 星链激光制管机控制软件
                             {
                                 switch (Cmd)
                                 {
-
+                                    
+                                    case Global.ContrlBoard_Commands.MotorAngle_X:
+                                        displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        break;
+                                    case Global.ContrlBoard_Commands.MotorAngle_Y:
+                                        displayStatusPara_ContrlBoard("电机Y角度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        break;
+                                    case Global.ContrlBoard_Commands.AlarmInfo:
+                                        displayStatusPara_ContrlBoard("报警信息", m_ReceiveDataAry.Skip(5).Take(2));
+                                        break;
+                                    //case Global.ContrlBoard_Commands.WaterTankOpera:
+                                    //    displayStatusPara_ContrlBoard("水箱", m_ReceiveDataAry[5]);
+                                    //    break;
+                                    case Global.ContrlBoard_Commands.CurrTemper:
+                                        displayStatusPara_ContrlBoard("当前温度", m_ReceiveDataAry.Skip(5).Take(2));
+                                        break;
+                                    //case Global.ContrlBoard_Commands.AirConditionerOpera:
+                                    //    displayStatusPara_ContrlBoard("空调", m_ReceiveDataAry[5]);
+                                    //    break;
+                                    case Global.ContrlBoard_Commands.CurrHumidity:
+                                        displayStatusPara_ContrlBoard("当前湿度", m_ReceiveDataAry.Skip(5).Take(2));
+                                        break;
+                                    case Global.ContrlBoard_Commands.CurrWeldLength:
+                                        displayStatusPara_ContrlBoard("当前焊接长度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        break;
+                                    case Global.ContrlBoard_Commands.TotaWeldLength:
+                                        displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        break;
                                     case Global.ContrlBoard_Commands.CurrMachineTime:
-                                        string datetime = (m_ReceiveDataAry[5] | (m_ReceiveDataAry[6] << 8)) + "年" + ((int)m_ReceiveDataAry[7]).ToString("00") + "月" + m_ReceiveDataAry[8].ToString("00") + "日 " + m_ReceiveDataAry[9].ToString("00") + ":" + m_ReceiveDataAry[10].ToString("00") + ":" + m_ReceiveDataAry[11].ToString("00");
-                                        labelCurrMachineTime.Text = datetime;
+                                       displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7));
+                                        break;
+                                    case Global.ContrlBoard_Commands.WeldTrackingSwitch:
+                                        displayStatusPara_ContrlBoard("焊接轨迹跟踪开关", m_ReceiveDataAry[5]);
+                                        break;
+                                    case Global.ContrlBoard_Commands.WeldPosition:
+                                        displayStatusPara_ContrlBoard("焊接轨迹坐标", m_ReceiveDataAry.Skip(5).Take(2));
                                         break;
 
                                     case Global.ContrlBoard_Commands.AllParameter:
@@ -1839,17 +1871,12 @@ namespace 星链激光制管机控制软件
                         if (btnWeldTrackingSwitch.Checked != false)
                         {
                             btnWeldTrackingSwitch.Checked = false;
-
-
                         }
                     }
                     else if (b_value == 0x01)
                     {
                         if (btnWeldTrackingSwitch.Checked != true)
                             btnWeldTrackingSwitch.Checked = true;
-
-
-
                     }
 
                     //  显示焊接轨迹
@@ -1887,53 +1914,221 @@ namespace 星链激光制管机控制软件
                 {
                     switch (displayname)
                     {
-
-                        case "当前机器时间":
+                        case "电机X角度":
                             {
-                                labelCurrMachineTime.Text = value.ToString();
+                                byte[] bParas = (byte[])value;
+                                double f_value = (bParas[5] | (bParas[6] << 8) | (bParas[7] << 16) | (bParas[8] << 24)) * 1.8f;
+                                label_Angle_X.Text = f_value.ToString("0.0 °");
+                                label_Angle_X.Tag = f_value;
                             }
                             break;
-                            //case "焊接轨迹跟踪开关":
-                            //    {
-                            //        if (((byte)value) == 0x00)
-                            //        {
-                            //            btnWeldTrackingSwitch.Checked = false;
-                            //        }
-                            //        else if (((byte)value) == 0x01)
-                            //        {
-                            //            btnWeldTrackingSwitch.Checked = true;
-                            //        }
-                            //    }
-                            //    break;
-                            //case "报警信息":
-                            //    {
-                            //        string strAlarm = "";
-                            //        byte W1 = ((byte[])value)[0];
-                            //        byte W2 = ((byte[])value)[1];
+                        case "电机Y角度":
+                            {
+                                byte[] bParas = (byte[])value;
+                                double f_value = (bParas[5] | (bParas[6] << 8) | (bParas[7] << 16) | (bParas[8] << 24)) * 1.8f;
+                                label_Angle_Y.Text = f_value.ToString("0.0 °");
+                                label_Angle_Y.Tag = f_value;
+                            }
+                            break;
+                        //case "水箱":
+                        //    {
 
-                            //        byte[] W1_bitArray = getBooleanArray(W1);
-                            //        if (W1_bitArray[0] == 1)
-                            //        {
-                            //            strAlarm += "电机X错误";
-                            //        }
-                            //        if (W1_bitArray[1] == 1)
-                            //        {
-                            //            strAlarm += "电机Y错误";
-                            //        }
-                            //        if (W1_bitArray[2] == 1)
-                            //        {
-                            //            strAlarm += "电机Z错误";
-                            //        }
-                            //        if (W1_bitArray[3] == 1)
-                            //        {
-                            //            strAlarm += "水冷机错误";
-                            //        }
+                        //        if (((byte)value) == 0x00)
+                        //        {
+                        //            labelWaterTank_SwitchStatus.ForeColor = ThemeTextColor;
+                        //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.无;
+                        //            btnWaterTankSwitch.Checked = false;
+                        //        }
+                        //        else if (((byte)value) == 0x01)
+                        //        {
+                        //            labelWaterTank_SwitchStatus.ForeColor = Color.Aqua;
+                        //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.有;
+                        //            btnWaterTankSwitch.Checked = true;
+                        //        }
+                        //    }
+                        //    break;
+                        case "当前温度":
+                            {
+                                byte[] bParas = (byte[])value;
+                                double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
+                                if (f_value > 1)
+                                {
+                                    btnWaterTankSwitch.Checked = true;
+                                    if (f_value > 80)
+                                    {
+                                        labelWaterTank_Temperature.ForeColor = Color.Red;
+                                        picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_alarm;
+
+                                    }
+                                    else
+                                    {
+                                        labelWaterTank_Temperature.ForeColor = Color.Aqua;
+                                        picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_normal;
+                                    }
+                                    labelWaterTank_Temperature.Text = f_value.ToString("0.0℃");
+                                }
+                                else
+                                {
+                                    btnWaterTankSwitch.Checked = false;
+                                }
+                            }
+                            break;
+                        case "报警信息":
+                            {
+                                byte[] bParas = (byte[])value;
+                                string strAlarm = "";
+                                byte W1 = bParas[0];
+                                byte W2 = bParas[1];
+
+                                byte[] W1_bitArray = getBooleanArray(W1);
+                                if (W1_bitArray[0] == 1)
+                                {
+                                    strAlarm += "电机X错误";
+                                }
+                                if (W1_bitArray[1] == 1)
+                                {
+                                    strAlarm += "电机Y错误";
+                                }
+                                if (W1_bitArray[2] == 1)
+                                {
+                                    strAlarm += "电机Z错误";
+                                }
+                                if (W1_bitArray[3] == 1)
+                                {
+                                    strAlarm += "水冷机错误";
+                                }
+                                if (W1_bitArray[4] == 1)
+                                {
+                                    if (W2 == 0x01)
+                                        strAlarm += "温湿度模块初始化错误";
+                                    else if (W2 == 0x01)
+                                        strAlarm += "内存24512 初始化错误";
+                                    else
+                                        strAlarm += "其他错误";
+
+                                }
 
 
-                            //        label_AlarmInfo.Text = strAlarm;
-                            //    }
-                            //    break;
+                                label_AlarmInfo.Text = strAlarm;
+                            }
+                            break;
+                        //case "空调":
+                        //    {
+                        //        if (((byte)value) == 0x00)
+                        //        {
+                        //            labelAirConditione_SwitchStatus.ForeColor = ThemeTextColor;
+                        //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.无;
+                        //            btnAirConditioneSwitch.Checked = false;
+                        //        }
+                        //        else if (((byte)value) == 0x01)
+                        //        {
+                        //            labelAirConditione_SwitchStatus.ForeColor = Color.Aqua;
+                        //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.有;
+                        //            btnAirConditioneSwitch.Checked = true;
+                        //        }
+                        //    }
+                        //    break;
+                        case "当前湿度":
+                            {
+                                byte[] bParas = (byte[])value;
+                                double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
+                                if (f_value > 1)
+                                {
+                                    btnAirConditioneSwitch.Checked = true;
+                                    if (f_value > 45)
+                                    {
+                                        labelAirConditione_Humidity.ForeColor = Color.Red;
+                                        picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_alarm;
 
+                                    }
+                                    else
+                                    {
+                                        labelAirConditione_Humidity.ForeColor = Color.Aqua;
+                                        picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_normal;
+                                    }
+
+                                    labelAirConditione_Humidity.Text = f_value.ToString("0.0") + "%RH";
+                                }
+                                else
+                                {
+                                    btnAirConditioneSwitch.Checked = false;
+                                }
+                            }
+                            break;
+                        case "当前焊接长度":
+                            {
+                                byte[] bParas = (byte[])value;
+                                double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
+                                labelCurrWeldLength.Text = f_value.ToString("0.0");
+
+                                //   "总焊接长度":
+
+                            }
+                            break;
+                        case "总焊接长度":
+                            {
+                                byte[] bParas = (byte[])value;
+                                double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
+                                labelTotalWeldLength.Text = f_value.ToString("0.0");
+                            }
+                            break;
+                        case "当前机器时间":
+                            {
+                                byte[] bParas = (byte[])value;
+                                string datetime = (bParas[0] | (bParas[1] << 8)) + "年" + ((int)bParas[2]).ToString("00") + "月" + bParas[3].ToString("00") + "日 " + bParas[4].ToString("00") + ":" + bParas[5].ToString("00") + ":" + bParas[6].ToString("00");
+                                labelCurrMachineTime.Text = datetime;
+                            }
+                            break;
+                        //case "焊接轨迹跟踪开关":
+                        //    {
+                        //        if (((byte)value) == 0x00)
+                        //        {
+                        //            btnWeldTrackingSwitch.Checked = false;
+                        //        }
+                        //        else if (((byte)value) == 0x01)
+                        //        {
+                        //            btnWeldTrackingSwitch.Checked = true;
+                        //        }
+                        //    }
+                        //    break;                       
+                        case "焊接轨迹跟踪开关":
+                            {
+                                if (((byte)value) == 0x00)
+                                {
+                                    if (btnWeldTrackingSwitch.Checked != false)
+                                    {
+                                        btnWeldTrackingSwitch.Checked = false;
+                                    }
+                                }
+                                else if (((byte)value) == 0x01)
+                                {
+                                    if (btnWeldTrackingSwitch.Checked != true)
+                                        btnWeldTrackingSwitch.Checked = true;
+                                }
+                            }
+                            break;
+                        case "焊接轨迹坐标":
+                            {
+                                byte[] bParas = (byte[])value;
+                               double f_value = (bParas[0] | (bParas[1] << 8)) * 0.01f;
+                                if (btnWeldTrackingSwitch.Checked)
+                                {
+                                    this.chart1.Series[0].Points.AddY(f_value);
+
+                                    resetChartAreaAxisX_MaxMin();
+                                    resetChartAreaAxisY_MaxMin(f_value);
+
+                                }
+                                else
+                                {
+                                    this.chart1.Series[0].Points.Clear();
+                                }
+                            }
+                            break;
+
+                        default:
+                            MessageBox.Show("控制板通信：收到未知的显示内容：" + displayname);
+                            break;
                     }
                 });
             }
