@@ -1475,40 +1475,40 @@ namespace 星链激光制管机控制软件
                                 {
                                     
                                     case Global.ContrlBoard_Commands.MotorAngle_X:
-                                        displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.MotorAngle_Y:
-                                        displayStatusPara_ContrlBoard("电机Y角度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        displayStatusPara_ContrlBoard("电机Y角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.AlarmInfo:
-                                        displayStatusPara_ContrlBoard("报警信息", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_ContrlBoard("报警信息", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
                                     //case Global.ContrlBoard_Commands.WaterTankOpera:
                                     //    displayStatusPara_ContrlBoard("水箱", m_ReceiveDataAry[5]);
                                     //    break;
                                     case Global.ContrlBoard_Commands.CurrTemper:
-                                        displayStatusPara_ContrlBoard("当前温度", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_ContrlBoard("当前温度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
                                     //case Global.ContrlBoard_Commands.AirConditionerOpera:
                                     //    displayStatusPara_ContrlBoard("空调", m_ReceiveDataAry[5]);
                                     //    break;
                                     case Global.ContrlBoard_Commands.CurrHumidity:
-                                        displayStatusPara_ContrlBoard("当前湿度", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_ContrlBoard("当前湿度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.CurrWeldLength:
-                                        displayStatusPara_ContrlBoard("当前焊接长度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        displayStatusPara_ContrlBoard("当前焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.TotaWeldLength:
-                                        displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4));
+                                        displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.CurrMachineTime:
-                                       displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7));
+                                       displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.WeldTrackingSwitch:
                                         displayStatusPara_ContrlBoard("焊接轨迹跟踪开关", m_ReceiveDataAry[5]);
                                         break;
                                     case Global.ContrlBoard_Commands.WeldPosition:
-                                        displayStatusPara_ContrlBoard("焊接轨迹坐标", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_ContrlBoard("焊接轨迹坐标", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
 
                                     case Global.ContrlBoard_Commands.AllParameter:
