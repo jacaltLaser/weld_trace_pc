@@ -461,7 +461,7 @@ namespace 星链激光制管机控制软件
             //设置定时间隔(毫秒为单位)
             MoveTimer.Interval = 500;
             //设置执行一次（false）还是一直执行(true)
-            MoveTimer.AutoReset = false;
+            MoveTimer.AutoReset = true;
             //设置是否执行System.Timers.Timer.Elapsed事件
             MoveTimer.Enabled = true;
             //绑定Elapsed事件
@@ -475,6 +475,11 @@ namespace 星链激光制管机控制软件
                 byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, moveMode, move_Direction);
                 Common.SendQueue_PC.Enqueue(m_SendAryPC);
                 continuityMoveFlag = true;
+            }
+            else
+            {
+                byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, moveMode, move_Direction);
+                Common.SendQueue_PC.Enqueue(m_SendAryPC);
             }
         }
 
@@ -1439,10 +1444,11 @@ private void InitCommandQueue()
                             int len = m_ReceiveDataAry[2];
                             int Cmd = m_ReceiveDataAry[4];
 
-
+                         //   MessageBox.Show("测试位置0");
 
                             if (header == Global.ContrlBoard_Commands.DataHead_receiveContrlBoard)
                             {
+                            //    MessageBox.Show("测试位置1");
                                 switch (Cmd)
                                 {
                                     
@@ -1929,15 +1935,16 @@ private void InitCommandQueue()
                         case "电机X角度":
                             {
                                 byte[] bParas = (byte[])value;
-                                double f_value = (bParas[5] | (bParas[6] << 8) | (bParas[7] << 16) | (bParas[8] << 24)) * 1.8f;
+                                double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
                                 label_Angle_X.Text = f_value.ToString("0.0 °");
                                 label_Angle_X.Tag = f_value;
+                           //     MessageBox.Show("测试位置2");
                             }
                             break;
                         case "电机Y角度":
                             {
                                 byte[] bParas = (byte[])value;
-                                double f_value = (bParas[5] | (bParas[6] << 8) | (bParas[7] << 16) | (bParas[8] << 24)) * 1.8f;
+                                double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
                                 label_Angle_Y.Text = f_value.ToString("0.0 °");
                                 label_Angle_Y.Tag = f_value;
                             }
