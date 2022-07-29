@@ -215,25 +215,25 @@ namespace 星链激光制管机控制软件
         public static byte LastGlobal;//最近发送的命令
 
         /// <summary>
-        /// 发送数据队列 向PC集控
+        /// 动态指令---发送数据队列
         /// </summary>
-        public static Queue<byte[]> SendQueue_PC = new Queue<byte[]>();//发送数据队列 向PC集控
+        public static Queue<byte[]> SendQueue_PC = new Queue<byte[]>();
         /// <summary>
-        /// 命令发送的队列
+        /// 常态指令---发送数据队列
         /// </summary>
-        public static Queue<byte[]> CommandQueue_PC = new Queue<byte[]>();//发送数据队列 
+        public static Queue<byte[]> CommandQueue_PC = new Queue<byte[]>();
         /// <summary>
         /// 数据接收集合
         /// </summary>
-        public static List<byte[]> m_ListRecData = new List<byte[]>();//接收到的数据集合
+        public static List<byte[]> m_ListRecData = new List<byte[]>();
         /// <summary>
         /// 数据接收锁
         /// </summary>
-        public readonly static object ojbSockeRec = new object();//接收锁
+        public readonly static object ojbSockeRec = new object();
         /// <summary>
         /// 发送命令锁
         /// </summary>
-        public readonly static object ojbSockeSend_PC = new object();// 发送锁
+        public readonly static object ojbSockeSend_PC = new object();
 
         /// <summary>
         /// 正确的连接串行端口
@@ -401,6 +401,8 @@ namespace 星链激光制管机控制软件
             sPort.ReceivedBytesThreshold = 1;
             sPort.ReadTimeout = -1;
             sPort.WriteTimeout = -1;
+
+            OpenSerialPort(sPort);
         }
 
         /// <summary>

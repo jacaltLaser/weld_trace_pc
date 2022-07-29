@@ -206,6 +206,7 @@ namespace 星链激光制管机控制软件
                         bPlayflag = false;
                         SendTimer.Stop();
                         DataParserTimer.Stop();
+                       Common. CloseSerialPort();
                         this.Close();
                         break;
                     }
@@ -1207,7 +1208,7 @@ namespace 星链激光制管机控制软件
         private void InitSendimer()
         {
             //设置定时间隔(毫秒为单位)
-            SendTimer.Interval = 200;
+            SendTimer.Interval = 100;
             //设置执行一次（false）还是一直执行(true)
             SendTimer.AutoReset = true;
             //设置是否执行System.Timers.Timer.Elapsed事件
@@ -1233,94 +1234,58 @@ namespace 星链激光制管机控制软件
                 {
                     lock (Common.ojbSockeSend_PC)
                     {
-                        // 动态指令
+                        
                         if (Common.SendQueue_PC.Count > 0)
                         {
+                            // 动态指令的发送
                             byte[] m_SendAryPC = Common.SendQueue_PC.Dequeue();
                             Common.Connect_SerialPort.Write(m_SendAryPC, 0, m_SendAryPC.Length);
                         }
                         else
                         {
-                            // 常态--循环查询状态
-
+                            // 常态指令的发送
                             if (Common.CommandQueue_PC.Count > 0)
                             {
-
                                 byte[] m_SendAryPC = Common.CommandQueue_PC.ElementAt(queryIndex);
                                 Common.Connect_SerialPort.Write(m_SendAryPC, 0, m_SendAryPC.Length);
 
-
                                 queryIndex++;
-                                if (queryIndex == 1)
+                                if (queryIndex >= queryMax)
                                 {
-                                    if (isOffset)
-                                    {
-                                        indexOffset++;
-                                        if (indexOffset >= Common.CommandQueue_PC.Count)
-                                        {
-                                            indexOffset = 2;
-                                        }
-                                        queryIndex = indexOffset;
-                                        isOffset = false;
-                                    }
-                                    else
-                                    {
-                                        queryIndex = 1;
-                                        isOffset = true;
-                                    }
-                                }
-                                else
-                                {
+                                    queryMax = 3;
                                     queryIndex = 0;
                                 }
-
                             }
                         }
 
-                        Common.Connect_Count++;
-                        if (Common.Connect_Count > 15)
-                        {
-                            Common.IsConnect = false;
-                            Common.Connect_Count = 0;
-                            Common.Connect_SerialPort = null;
-                        }
                     }
                 }
             }
             else
             {
-                // 通信失联时，对所以串口发送查询指令，直到获得回应为止
-                Common.CreateSerialPort();
-                foreach (SerialPort sport in Common.serialPort)
+                Common.Connect_Count++;
+                if (Common.Connect_Count > 30)
                 {
-                    lock (Common.ojbSockeSend_PC)
-                    {
-                        if (Common.OpenSerialPort(sport) == "")
-                        {
-                            if (sport.IsOpen)
-                            {
-                                byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.CurrMachineTime);
-                                sport.Write(m_SendAryPC, 0, m_SendAryPC.Length);
-                            }
-                        }
-                    }
+                    Common.IsConnect = false;
+                    Common.Connect_Count = 0;
+                    Common.Connect_SerialPort = null;
+
+                    // 通信失联时，3000ms后初始化一次串口
+                    Common.CreateSerialPort();
                 }
+
             }
         }
 
-        /// <summary>
-        /// 是否进行激光器通信指令偏移
-        /// </summary>
-        bool isOffset = false;
-        /// <summary>
-        /// 激光器通信指令偏移量
-        /// </summary>
-        int indexOffset = 2;
+/// <summary>
+/// 常态查询最大值
+/// </summary>
+        int queryMax = 6;
 
         /// <summary>
         /// 初始化需循环查询的命令队列
         /// </summary>
-        private void InitCommandQueue()
+private void InitCommandQueue()
         {
             lock (Common.ojbSockeSend_PC)
             {
@@ -1329,11 +1294,13 @@ namespace 星链激光制管机控制软件
 
                 #region 读取控制板
 
+                /*
+                 
                 // 读取--所有参数
                 m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
                 Common.CommandQueue_PC.Enqueue(m_SendAryPC);
 
-                /*
+                
                        // 读取---当前机器时间
                        //m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.CurrMachineTime);
                        //Common.CommandQueue_PC.Enqueue(m_SendAryPC);
@@ -1396,9 +1363,14 @@ namespace 星链激光制管机控制软件
                 m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.AlarmInfo);
                 Common.CommandQueue_PC.Enqueue(m_SendAryPC);
 
-                // 读取---状态信息
+                // 读取---状态信息1
                 m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.StateInfo1);
                 Common.CommandQueue_PC.Enqueue(m_SendAryPC);
+
+                // 读取---状态信息2
+                m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.StateInfo2);
+                Common.CommandQueue_PC.Enqueue(m_SendAryPC);
+
 
                 // 读取---使能开关状态
                 m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.SIM_EN);
@@ -1450,7 +1422,7 @@ namespace 星链激光制管机控制软件
         /// <param name="e"></param>
         private void DataParserTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-
+          
             if (Common.IsConnect)
             {
                 lock (Common.ojbSockeRec)
@@ -1520,6 +1492,28 @@ namespace 星链激光制管机控制软件
                                         break;
                                 }
 
+                                if(!ContrlBoardConnect)
+                                {
+                                    // 读取--所有参数
+                                  byte[]  m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
+                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
+                                }
+
+                                ContrlBoardConnect = true;
+                                notContrlBoardCommCount = 0;
+                            }
+                            else
+                            {
+                                if (ContrlBoardConnect)
+                                {
+                                    notContrlBoardCommCount++;
+                                    if (notContrlBoardCommCount > 15)
+                                    {
+                                        ContrlBoardConnect = false;
+                                        notContrlBoardCommCount = 0;
+                                        MessageBox.Show("与控制板的通信已发生中断！");
+                                    }
+                                }
                             }
 
 
@@ -1537,8 +1531,12 @@ namespace 星链激光制管机控制软件
                                         displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4));
                                         break;
                                     case Global.LaserDevice_Commands.StateInfo1:
-                                        displayStatusPara_LaserDevice("状态信息", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_LaserDevice("状态信息1", m_ReceiveDataAry.Skip(5).Take(2));
                                         break;
+                                    case Global.LaserDevice_Commands.StateInfo2:
+                                        displayStatusPara_LaserDevice("状态信息2", m_ReceiveDataAry.Skip(5).Take(2));
+                                        break;
+
 
                                     default:
                                         MessageBox.Show("激光器通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2"));
@@ -1554,11 +1552,11 @@ namespace 星链激光制管机控制软件
                                 if (laserConnect)
                                 {
                                     notLaserCommCount++;
-                                    if (notLaserCommCount > 10)
+                                    if (notLaserCommCount > 15)
                                     {
                                         laserConnect = false;
                                         notLaserCommCount = 0;
-                                        MessageBox.Show("与激光器的通信发生中断！");
+                                        MessageBox.Show("与激光器的通信已发生中断！");
                                     }
                                 }
 
@@ -1575,7 +1573,7 @@ namespace 星链激光制管机控制软件
                     else
                     {
                         notCommDataCount++;
-                        if (notCommDataCount >= 10)
+                        if (notCommDataCount >= 20)
                         {
                             Common.IsConnect = false;
                             label_CommState.Text = "通信已断开";
@@ -1587,16 +1585,24 @@ namespace 星链激光制管机控制软件
             InitializeAfterDisconnect();
         }
 
+
+
+        /// <summary>
+        /// 串口通信数据为空的计数
+        /// </summary>
+        int notCommDataCount = 0;
+        /// <summary>
+        /// 控制板通信的计数
+        /// </summary>
+        int notContrlBoardCommCount = 0;
+        /// <summary>
+        /// 控制板的通信连接
+        /// </summary>
+        bool ContrlBoardConnect = false;
         /// <summary>
         /// 激光器通信的计数
         /// </summary>
         int notLaserCommCount = 0;
-
-        /// <summary>
-        /// 通信数据为空的计数
-        /// </summary>
-        int notCommDataCount = 0;
-
         /// <summary>
         /// 激光器的通信连接
         /// </summary>
@@ -1613,7 +1619,13 @@ namespace 星链激光制管机控制软件
                 {
                     this.Invoke((EventHandler)delegate
                     {
-                        if (Common.IsConnect)
+                        if (!Common.IsConnect)
+                        {
+                            laserConnect = false;
+                            ContrlBoardConnect = false;
+                        }
+
+                        if (ContrlBoardConnect)
                         {
                             label_CommState.ForeColor = Color.Aqua;
                             label_CommState.Text = "通信连接正常";
@@ -1663,8 +1675,6 @@ namespace 星链激光制管机控制软件
                             //  显示焊接轨迹
                             //    this.chart1.Series[0].Points.Clear();
 
-
-                            laserConnect = false;
                         }
 
                         if (laserConnect)
@@ -1674,6 +1684,8 @@ namespace 星链激光制管机控制软件
                         }
                         else
                         {
+                            queryMax = 6;
+
                             isInternalMode = false;
                             btnSetPower.Enabled = false;
                             btnEnableSwitch.Enabled = false;
@@ -2349,28 +2361,10 @@ namespace 星链激光制管机控制软件
                                     picAlarm_Status.BackgroundImage = Properties.Resources.无;
                                 }
 
-                                if (laserConnect == false)
-                                {
-                                    byte[] m_SendAryPC;
-                                    // 读取---状态信息
-                                    m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.StateInfo1);
-                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
 
-                                    // 读取---使能开关状态
-                                    m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.SIM_EN);
-                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
-
-                                    // 读取---红光开关状态
-                                    m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.RedSwitch);
-                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
-
-                                    // 读取---激光输出功率
-                                    m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.LaserPower);
-                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
-                                }
                             }
                             break;
-                        case "状态信息":
+                        case "状态信息1":
                             {
 
                                 byte S1 = ((byte[])value)[0];
@@ -2393,7 +2387,7 @@ namespace 星链激光制管机控制软件
                                 }
                                 else
                                 {
-                                    displayState.display("控制模式：外控", StateColor.normalColor);
+                                    displayState.display("控制模式：外控", StateColor.WarnColor);
                                     isInternalMode = false;
                                     btnSetPower.Enabled = false;
                                     btnEnableSwitch.Enabled = false;
@@ -2412,7 +2406,7 @@ namespace 星链激光制管机控制软件
                                 }
                                 else
                                 {
-                                    displayState.display("激光器出光：没出光", StateColor.normalColor);
+                                    displayState.display("激光器出光：没出光", StateColor.ShutColor);
                                     labelLaser_Status.ForeColor = ThemeTextColor;
                                     picLaser_Status.BackgroundImage = Properties.Resources.无;
                                     btnWeldSwitch.Checked = false;
@@ -2426,7 +2420,7 @@ namespace 星链激光制管机控制软件
                                 }
                                 else
                                 {
-                                    displayState.display("主电源：关闭", StateColor.normalColor);
+                                    displayState.display("主电源：关闭", StateColor.ShutColor);
                                     labelPower_Status.ForeColor = ThemeTextColor;
                                     picPower_Status.BackgroundImage = Properties.Resources.无;
                                 }
@@ -2442,7 +2436,7 @@ namespace 星链激光制管机控制软件
                                 // 结露指示，0 - 正常，1 - 报警
                                 if (S1_bitArray[5] == 1)
                                 {
-                                    displayState.display("结露：报警", StateColor.normalColor);
+                                    displayState.display("结露：报警", StateColor.AlarmColor);
                                 }
                                 else
                                 {
@@ -2461,7 +2455,7 @@ namespace 星链激光制管机控制软件
                                 // 连续前向光锁机标志，0 - 未锁机，1 – 已锁机
                                 if (S2_bitArray[0] == 1)
                                 {
-                                    displayState.display("连续前向光锁机标志：已锁机", StateColor.normalColor);
+                                    displayState.display("连续前向光锁机标志：已锁机", StateColor.WarnColor);
                                 }
                                 else
                                 {
@@ -2506,7 +2500,7 @@ namespace 星链激光制管机控制软件
                                 // 连续QBH 温度锁机标志，0 - 未锁机，1 – 已锁机
                                 if (S2_bitArray[5] == 1)
                                 {
-                                    displayState.display("连续QBH 温度锁机标志：已锁机", StateColor.normalColor);
+                                    displayState.display("连续QBH 温度锁机标志：已锁机", StateColor.WarnColor);
                                 }
                                 else
                                 {
@@ -2515,7 +2509,7 @@ namespace 星链激光制管机控制软件
                                 // 连续回光锁机标志，0 - 未锁机，1 – 已锁机
                                 if (S2_bitArray[6] == 1)
                                 {
-                                    displayState.display("连续回光锁机标志：已锁机", StateColor.normalColor);
+                                    displayState.display("连续回光锁机标志：已锁机", StateColor.WarnColor);
                                 }
                                 else
                                 {
@@ -2526,6 +2520,75 @@ namespace 星链激光制管机控制软件
                                 {
 
                                 }
+                            }
+                            break;
+                        case "状态信息2":
+                            {
+
+                                byte S1 = ((byte[])value)[0];
+                                byte S2 = ((byte[])value)[1];
+
+                                byte[] S1_bitArray = getBooleanArray(S1);
+                                byte[] S2_bitArray = getBooleanArray(S2);
+
+                                displayState.clearItem();
+                              
+                                if (S1_bitArray[0] == 1)
+                                {
+                                    
+                                }
+                                // 激光器SD卡状态，0 未连接，1 已连接
+                                if (S1_bitArray[1] == 1)
+                                {
+                                    displayState.display("激光器SD卡状态：已连接", StateColor.normalColor);
+                                }
+                                else
+                                {
+                                    displayState.display("激光器SD卡状态：未连接", StateColor.WarnColor);
+                                }
+                               
+                                if (S1_bitArray[2] == 1)
+                                {
+                               
+                                }
+                                // 激光器RTC状态，1 锁机，0 正常 （有加密数据，RTC 时间不正确）
+                                if (S1_bitArray[3] == 1)
+                                {
+                                    displayState.display("激光器RTC状态：锁机", StateColor.AlarmColor);
+                                }
+                                else
+                                {
+                                    displayState.display("激光器RTC状态：正常", StateColor.normalColor);
+                                }
+                                // 激光器互锁状态，0 未连接，1 已连接
+                                if (S1_bitArray[4] == 1)
+                                {
+                                    displayState.display("激光器互锁状态：已连接", StateColor.normalColor);
+                                }
+                                else
+                                {
+                                    displayState.display("激光器互锁状态：未连接", StateColor.ShutColor);
+                                }
+                                // 激光器后气动门/互锁 2 状态，0 未连接，1 已连接
+                                if (S1_bitArray[5] == 1)
+                                {
+                                    displayState.display("激光器后气动门/互锁：已连接", StateColor.normalColor);
+                                }
+                                else
+                                {
+                                    displayState.display("激光器后气动门/互锁：未连接", StateColor.normalColor);
+                                }
+
+                                if (S1_bitArray[6] == 1)
+                                {
+
+                                }
+                                if (S1_bitArray[7] == 1)
+                                {
+
+                                }
+
+
                             }
                             break;
 
@@ -2886,9 +2949,7 @@ namespace 星链激光制管机控制软件
             return System.Text.RegularExpressions.Regex.IsMatch(value, @"^[+-]?\d*[.]?\d*$");
         }
 
-       
-
-
+      
     }
 
 }

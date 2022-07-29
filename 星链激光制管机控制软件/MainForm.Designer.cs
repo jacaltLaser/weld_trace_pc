@@ -331,6 +331,8 @@
             this.splitContainer1.Panel2.Controls.Add(this.label2);
             this.splitContainer1.Panel2.Controls.Add(this.label_CommState);
             this.splitContainer1.Panel2.Controls.Add(this.label1);
+            this.splitContainer1.Panel2.Font = new System.Drawing.Font("微软雅黑", 9F);
+            this.splitContainer1.Panel2.ForeColor = System.Drawing.Color.Red;
             this.splitContainer1.Size = new System.Drawing.Size(1024, 560);
             this.splitContainer1.SplitterDistance = 520;
             this.splitContainer1.TabIndex = 3;
@@ -1887,7 +1889,7 @@
             this.label_CommState.Name = "label_CommState";
             this.label_CommState.Size = new System.Drawing.Size(100, 17);
             this.label_CommState.TabIndex = 2;
-            this.label_CommState.Text = "通信未连接";
+            this.label_CommState.Text = "串口通信：未连接，主板通信：未连接，激光器通信：未连接";
             // 
             // label1
             // 
@@ -2113,7 +2115,6 @@
         private System.Windows.Forms.Label labelCurrMachineTime;
         private System.Windows.Forms.CheckBox btnAirConditioneSwitch;
         private System.Windows.Forms.CheckBox btnWaterTankSwitch;
-        private System.Windows.Forms.Label label_CommState;
         private System.Windows.Forms.Panel panel6;
         private System.Windows.Forms.Panel panel22;
         private System.Windows.Forms.Button btn_skin;
@@ -2123,6 +2124,7 @@
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox cbxIntervalTime;
+        private System.Windows.Forms.Label label_CommState;
     }
 }
 
