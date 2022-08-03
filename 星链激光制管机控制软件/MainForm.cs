@@ -206,8 +206,9 @@ namespace 星链激光制管机控制软件
                         bPlayflag = false;
                         SendTimer.Stop();
                         DataParserTimer.Stop();
-                       Common. CloseSerialPort();
+                        Common.CloseSerialPort();
                         this.Close();
+                        Application.Exit();
                         break;
                     }
 
@@ -1213,7 +1214,7 @@ namespace 星链激光制管机控制软件
         private void InitSendimer()
         {
             //设置定时间隔(毫秒为单位)
-            SendTimer.Interval = 100;
+            SendTimer.Interval = 200;
             //设置执行一次（false）还是一直执行(true)
             SendTimer.AutoReset = true;
             //设置是否执行System.Timers.Timer.Elapsed事件
@@ -1239,7 +1240,7 @@ namespace 星链激光制管机控制软件
                 {
                     lock (Common.ojbSockeSend_PC)
                     {
-                        
+
                         if (Common.SendQueue_PC.Count > 0)
                         {
                             // 动态指令的发送
@@ -1282,15 +1283,15 @@ namespace 星链激光制管机控制软件
             }
         }
 
-/// <summary>
-/// 常态查询最大值
-/// </summary>
+        /// <summary>
+        /// 常态查询最大值
+        /// </summary>
         int queryMax = 6;
 
         /// <summary>
         /// 初始化需循环查询的命令队列
         /// </summary>
-private void InitCommandQueue()
+        private void InitCommandQueue()
         {
             lock (Common.ojbSockeSend_PC)
             {
@@ -1427,7 +1428,7 @@ private void InitCommandQueue()
         /// <param name="e"></param>
         private void DataParserTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-          
+
             if (Common.IsConnect)
             {
                 lock (Common.ojbSockeRec)
@@ -1444,14 +1445,26 @@ private void InitCommandQueue()
                             int len = m_ReceiveDataAry[2];
                             int Cmd = m_ReceiveDataAry[4];
 
-                         //   MessageBox.Show("测试位置0");
+                            //if (this.IsHandleCreated)
+                            //{
+                            //    this.Invoke((EventHandler)delegate
+                            //    {
+                            //        string s = "";
+                            //        foreach(byte b in m_ReceiveDataAry)
+                            //        {
+                            //            s += b.ToString("X2") + " ";
+                            //        }
+
+                            //        textBox1.Text += s+ "\r\n"; ;
+                            //    });
+                            //}
 
                             if (header == Global.ContrlBoard_Commands.DataHead_receiveContrlBoard)
                             {
-                            //    MessageBox.Show("测试位置1");
+                                                   
                                 switch (Cmd)
                                 {
-                                    
+
                                     case Global.ContrlBoard_Commands.MotorAngle_X:
                                         displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
@@ -1480,7 +1493,7 @@ private void InitCommandQueue()
                                         displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.CurrMachineTime:
-                                       displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7).ToArray());
+                                        displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7).ToArray());
                                         break;
                                     case Global.ContrlBoard_Commands.WeldTrackingSwitch:
                                         displayStatusPara_ContrlBoard("焊接轨迹跟踪开关", m_ReceiveDataAry[5]);
@@ -1494,14 +1507,22 @@ private void InitCommandQueue()
                                         break;
 
                                     default:
-                                        MessageBox.Show("控制板通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2"));
+                                        {
+                                            if (this.IsHandleCreated)
+                                            {
+                                                this.Invoke((EventHandler)delegate
+                                                {
+                                                    label_AlarmInfo.Text = "控制板通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                });
+                                            }
+                                        }
                                         break;
                                 }
 
-                                if(!ContrlBoardConnect)
+                                if (!ContrlBoardConnect)
                                 {
                                     // 读取--所有参数
-                                  byte[]  m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
+                                    byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
                                     Common.SendQueue_PC.Enqueue(m_SendAryPC);
                                 }
 
@@ -1512,15 +1533,29 @@ private void InitCommandQueue()
                             {
                                 if (ContrlBoardConnect)
                                 {
+                                    //if (this.IsHandleCreated)
+                                    //{
+                                    //    this.Invoke((EventHandler)delegate
+                                    //    {
+                                    //        label_AlarmInfo.Text = notContrlBoardCommCount.ToString();
+                                    //    });
+                                    //}
                                     notContrlBoardCommCount++;
-                                    if (notContrlBoardCommCount > 15)
+                                    if (notContrlBoardCommCount > 30)
                                     {
                                         ContrlBoardConnect = false;
                                         notContrlBoardCommCount = 0;
-                                        MessageBox.Show("与控制板的通信已发生中断！");
+                                        if (this.IsHandleCreated)
+                                        {
+                                            this.Invoke((EventHandler)delegate
+                                            {
+                                                label_AlarmInfo.Text = "与控制板的通信已发生中断！";
+                                            });
+                                        }
                                     }
                                 }
                             }
+
 
 
                             if (header == Global.LaserDevice_Commands.DataHead_receiveLaserDevice)
@@ -1533,19 +1568,33 @@ private void InitCommandQueue()
                                     case Global.LaserDevice_Commands.RedSwitch:
                                         displayStatusPara_LaserDevice("红光开关", m_ReceiveDataAry[5]);
                                         break;
+                                    case Global.LaserDevice_Commands.ModeSwitch:
+                                        displayStatusPara_LaserDevice("内外控制模式", m_ReceiveDataAry[5]);
+                                        break;
+                                    case Global.LaserDevice_Commands.SIM_EN:
+                                        displayStatusPara_LaserDevice("内控使能", m_ReceiveDataAry[5]);
+                                        break;
                                     case Global.LaserDevice_Commands.AlarmInfo:
-                                        displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4));
+                                        displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
                                     case Global.LaserDevice_Commands.StateInfo1:
-                                        displayStatusPara_LaserDevice("状态信息1", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_LaserDevice("状态信息1", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
                                     case Global.LaserDevice_Commands.StateInfo2:
-                                        displayStatusPara_LaserDevice("状态信息2", m_ReceiveDataAry.Skip(5).Take(2));
+                                        displayStatusPara_LaserDevice("状态信息2", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
                                         break;
 
 
                                     default:
-                                        MessageBox.Show("激光器通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2"));
+                                        {
+                                            if (this.IsHandleCreated)
+                                            {
+                                                this.Invoke((EventHandler)delegate
+                                                {
+                                                    label_AlarmInfo.Text = "激光器通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                });
+                                            }
+                                        }
                                         break;
                                 }
 
@@ -1562,11 +1611,18 @@ private void InitCommandQueue()
                                     {
                                         laserConnect = false;
                                         notLaserCommCount = 0;
-                                        MessageBox.Show("与激光器的通信已发生中断！");
+                                        if (this.IsHandleCreated)
+                                        {
+                                            this.Invoke((EventHandler)delegate
+                                            {
+                                                label_AlarmInfo.Text = "与激光器的通信已发生中断！";
+                                            });
+                                        }
                                     }
                                 }
-
                             }
+
+
 
                         }
                         if (Common.m_ListRecData.Count > 0)
@@ -1582,7 +1638,14 @@ private void InitCommandQueue()
                         if (notCommDataCount >= 20)
                         {
                             Common.IsConnect = false;
-                            label_CommState.Text = "通信已断开";
+                            if (this.IsHandleCreated)
+                            {
+                                this.Invoke((EventHandler)delegate
+                                {
+                                    label_CommState.Text = "通信已断开";
+                                });
+                            }
+
                         }
                     }
                 }
@@ -2170,8 +2233,9 @@ private void InitCommandQueue()
                     {
                         case "激光输出功率":
                             {
-                                LaserPower.Text = value + "%";
-                                LaserPower.Value = (int)value;
+                                int pout = Convert.ToInt16(value);
+                                LaserPower.Text = pout + "%";
+                                LaserPower.Value = pout;
                             }
                             break;
                         case "内控使能":
@@ -2208,6 +2272,32 @@ private void InitCommandQueue()
                                     if (btnEnableSwitch.Checked)
                                         sendEnableSwitchCommands(false);
                                 }
+                            }
+                            break;
+                        case "内外控制模式":
+                            {
+                                if (((byte)value) == 0x55)
+                                {
+                                    displayState.display("控制模式：内控", StateColor.normalColor);
+                                    isInternalMode = true;
+                                    btnSetPower.Enabled = true;
+                                    btnEnableSwitch.Enabled = true;
+                                    btnRedlightSwitch.Enabled = true;
+                                    if (btnEnableSwitch.Checked)
+                                        btnWeldSwitch.Enabled = true;
+                                }
+                                else if (((byte)value) == 0xAA)
+                                {
+                                    displayState.display("控制模式：外控", StateColor.WarnColor);
+                                    isInternalMode = false;
+                                    btnSetPower.Enabled = false;
+                                    btnEnableSwitch.Enabled = false;
+                                    btnRedlightSwitch.Enabled = false;
+                                    btnWeldSwitch.Enabled = false;
+
+                                    setInternalMode();
+                                }
+                              
                             }
                             break;
                         case "报警信息":
