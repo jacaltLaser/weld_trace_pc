@@ -707,7 +707,7 @@ namespace 星链激光制管机控制软件
                     {
                         // 开始出光
                         byte[] open = new byte[] { 0xAA };
-                        byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.MCU_Switch, open);
+                        byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.SIM_Ctrl, open);
                         Common.SendQueue_PC.Enqueue(m_SendAryPC);
                     }
                 }
@@ -722,7 +722,7 @@ namespace 星链激光制管机控制软件
                     }
                     // 结束出光
                     byte[] close = new byte[] { 0x55 };
-                    byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.MCU_Switch, close);
+                    byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.SIM_Ctrl, close);
                     Common.SendQueue_PC.Enqueue(m_SendAryPC);
                 }
             }
@@ -807,8 +807,8 @@ namespace 星链激光制管机控制软件
             }
 
             // 读取---使能开关状态
-            m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.SIM_EN);
-            Common.SendQueue_PC.Enqueue(m_SendAryPC);
+            //m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.SIM_EN);
+            //Common.SendQueue_PC.Enqueue(m_SendAryPC);
         }
 
         /// <summary>
@@ -864,8 +864,8 @@ namespace 星链激光制管机控制软件
             }
 
             // 读取---红光开关状态
-            m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.RedSwitch);
-            Common.SendQueue_PC.Enqueue(m_SendAryPC);
+            //m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataRead, Global.LaserDevice_Commands.RedSwitch);
+            //Common.SendQueue_PC.Enqueue(m_SendAryPC);
         }
         /// <summary>
         /// 红光开关状态
@@ -1574,6 +1574,9 @@ namespace 星链激光制管机控制软件
                                     case Global.LaserDevice_Commands.SIM_EN:
                                         displayStatusPara_LaserDevice("内控使能", m_ReceiveDataAry[5]);
                                         break;
+                                    case Global.LaserDevice_Commands.SIM_Ctrl:
+                                        displayStatusPara_LaserDevice("内控出光", m_ReceiveDataAry[5]);
+                                        break;
                                     case Global.LaserDevice_Commands.AlarmInfo:
                                         displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
                                         break;
@@ -1688,105 +1691,112 @@ namespace 星链激光制管机控制软件
                 {
                     this.Invoke((EventHandler)delegate
                     {
-                        if (!Common.IsConnect)
+                        try
                         {
-                            laserConnect = false;
-                            ContrlBoardConnect = false;
-                        }
+                            if (!Common.IsConnect)
+                            {
+                                laserConnect = false;
+                                ContrlBoardConnect = false;
+                            }
 
-                        if (ContrlBoardConnect)
+                            if (ContrlBoardConnect)
+                            {
+                                label_CommState.ForeColor = Color.Aqua;
+                                label_CommState.Text = "通信连接正常";
+                            }
+                            else
+                            {
+                                label_CommState.ForeColor = Color.Red;
+                                label_CommState.Text = "通信已断开";
+
+                                //  "电机X角度":
+                                label_Angle_X.Text = "0.0 °";
+                                label_Angle_X.Tag = "0.0 °";
+
+                                //    "电机Y角度":
+                                label_Angle_Y.Text = "0.0 °";
+                                label_Angle_Y.Tag = "0.0 °";
+
+
+
+                                //   "报警信息":
+                                label_AlarmInfo.Text = "";
+
+                                //  "当前温度":
+                                labelWaterTank_Temperature.Text = "0.0℃";
+                                labelWaterTank_Temperature.ForeColor = ThemeTextColor;
+                                picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_nothing;
+
+
+                                //   "当前湿度":
+                                labelAirConditione_Humidity.ForeColor = ThemeTextColor;
+                                picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_nothing;
+                                labelAirConditione_Humidity.Text = "0.0%RH";
+
+
+                                //   "当前焊接长度":
+                                labelCurrWeldLength.Text = "0.0";
+
+                                //   "总焊接长度":
+                                labelTotalWeldLength.Text = "0.0";
+
+                                //  设备时间
+                                //  labelCurrMachineTime.Text = s_value;
+
+                                //  "焊接轨迹跟踪开关":
+                                btnWeldTrackingSwitch.Checked = false;
+
+                                //  显示焊接轨迹
+                                //    this.chart1.Series[0].Points.Clear();
+
+                            }
+
+                            if (laserConnect)
+                            {
+                                picComm_Status.BackgroundImage = Properties.Resources.有;
+                                labelComm_Status.ForeColor = Color.Aqua;
+                            }
+                            else
+                            {
+                                queryMax = 6;
+
+                                isInternalMode = false;
+                                btnSetPower.Enabled = false;
+                                btnEnableSwitch.Enabled = false;
+                                btnRedlightSwitch.Enabled = false;
+                                btnWeldSwitch.Enabled = false;
+
+                                btnEnableSwitch.Checked = false;
+                                btnRedlightSwitch.Checked = false;
+                                btnWeldSwitch.Checked = false;
+
+                                LaserPower.Text = "0%";
+                                LaserPower.Value = 0;
+
+                                picComm_Status.BackgroundImage = Properties.Resources.无;
+                                labelComm_Status.ForeColor = ThemeTextColor;
+
+                                labelRedlight_Status.ForeColor = ThemeTextColor;
+                                picRedlight_Status.BackgroundImage = Properties.Resources.无;
+
+                                labelPower_Status.ForeColor = ThemeTextColor;
+                                picPower_Status.BackgroundImage = Properties.Resources.无;
+
+                                labelLaser_Status.ForeColor = ThemeTextColor;
+                                picLaser_Status.BackgroundImage = Properties.Resources.无;
+
+                                labelEnable_Status.ForeColor = ThemeTextColor;
+                                picEnable_Status.BackgroundImage = Properties.Resources.无;
+
+                                labelAlarm_Status.ForeColor = ThemeTextColor;
+                                picAlarm_Status.BackgroundImage = Properties.Resources.无;
+                            }
+
+                        }
+                        catch(Exception ex)
                         {
-                            label_CommState.ForeColor = Color.Aqua;
-                            label_CommState.Text = "通信连接正常";
+                            MessageBox.Show(ex.Message+"\r\n"+ex.StackTrace);
                         }
-                        else
-                        {
-                            label_CommState.ForeColor = Color.Red;
-                            label_CommState.Text = "通信已断开";
-
-                            //  "电机X角度":
-                            label_Angle_X.Text = "0.0 °";
-                            label_Angle_X.Tag = "0.0 °";
-
-                            //    "电机Y角度":
-                            label_Angle_Y.Text = "0.0 °";
-                            label_Angle_Y.Tag = "0.0 °";
-
-
-
-                            //   "报警信息":
-                            label_AlarmInfo.Text = "";
-
-                            //  "当前温度":
-                            labelWaterTank_Temperature.Text = "0.0℃";
-                            labelWaterTank_Temperature.ForeColor = ThemeTextColor;
-                            picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_nothing;
-
-
-                            //   "当前湿度":
-                            labelAirConditione_Humidity.ForeColor = ThemeTextColor;
-                            picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_nothing;
-                            labelAirConditione_Humidity.Text = "0.0%RH";
-
-
-                            //   "当前焊接长度":
-                            labelCurrWeldLength.Text = "0.0";
-
-                            //   "总焊接长度":
-                            labelTotalWeldLength.Text = "0.0";
-
-                            //  设备时间
-                            //  labelCurrMachineTime.Text = s_value;
-
-                            //  "焊接轨迹跟踪开关":
-                            btnWeldTrackingSwitch.Checked = false;
-
-                            //  显示焊接轨迹
-                            //    this.chart1.Series[0].Points.Clear();
-
-                        }
-
-                        if (laserConnect)
-                        {
-                            picComm_Status.BackgroundImage = Properties.Resources.有;
-                            labelComm_Status.ForeColor = Color.Aqua;
-                        }
-                        else
-                        {
-                            queryMax = 6;
-
-                            isInternalMode = false;
-                            btnSetPower.Enabled = false;
-                            btnEnableSwitch.Enabled = false;
-                            btnRedlightSwitch.Enabled = false;
-                            btnWeldSwitch.Enabled = false;
-
-                            btnEnableSwitch.Checked = false;
-                            btnRedlightSwitch.Checked = false;
-                            btnWeldSwitch.Checked = false;
-
-                            LaserPower.Text = "0%";
-                            LaserPower.Value = 0;
-
-                            picComm_Status.BackgroundImage = Properties.Resources.无;
-                            labelComm_Status.ForeColor = ThemeTextColor;
-
-                            labelRedlight_Status.ForeColor = ThemeTextColor;
-                            picRedlight_Status.BackgroundImage = Properties.Resources.无;
-
-                            labelPower_Status.ForeColor = ThemeTextColor;
-                            picPower_Status.BackgroundImage = Properties.Resources.无;
-
-                            labelLaser_Status.ForeColor = ThemeTextColor;
-                            picLaser_Status.BackgroundImage = Properties.Resources.无;
-
-                            labelEnable_Status.ForeColor = ThemeTextColor;
-                            picEnable_Status.BackgroundImage = Properties.Resources.无;
-
-                            labelAlarm_Status.ForeColor = ThemeTextColor;
-                            picAlarm_Status.BackgroundImage = Properties.Resources.无;
-                        }
-
                     });
                 }
             }
@@ -1807,7 +1817,8 @@ namespace 星链激光制管机控制软件
             {
                 this.Invoke((EventHandler)delegate
                 {
-
+                    try
+                    { 
                     //if (bParas.Length != 33)
                     //{
                     //    MessageBox.Show("全部参数数据长度=" + bParas.Length + "[错误]");
@@ -1975,7 +1986,11 @@ namespace 星链激光制管机控制软件
                         this.chart1.Series[0].Points.Clear();
                     }
 
-
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    }
 
 
                 });
@@ -1993,6 +2008,8 @@ namespace 星链激光制管机控制软件
             {
                 this.Invoke((EventHandler)delegate
                 {
+                    try
+                    { 
                     switch (displayname)
                     {
                         case "电机X角度":
@@ -2212,6 +2229,11 @@ namespace 星链激光制管机控制软件
                             MessageBox.Show("控制板通信：收到未知的显示内容：" + displayname);
                             break;
                     }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    }
                 });
             }
         }
@@ -2229,6 +2251,8 @@ namespace 星链激光制管机控制软件
             {
                 this.Invoke((EventHandler)delegate
                 {
+                    try
+                    { 
                     switch (displayname)
                     {
                         case "激光输出功率":
@@ -2256,7 +2280,27 @@ namespace 星链激光制管机控制软件
                                 }
                             }
                             break;
-                        case "红光开关":
+                            case "内控出光":
+                                {
+                                    if (((byte)value) == 0x55)
+                                    {
+                                        displayState.display("激光器出光：没出光", StateColor.ShutColor);
+                                        labelLaser_Status.ForeColor = ThemeTextColor;
+                                        picLaser_Status.BackgroundImage = Properties.Resources.无;
+                                        btnWeldSwitch.Checked = false;
+                                        
+                                    }
+                                    else if (((byte)value) == 0xAA)
+                                    {
+                                        displayState.display("激光器出光：出光", StateColor.normalColor);
+                                        labelLaser_Status.ForeColor = Color.Aqua;
+                                        picLaser_Status.BackgroundImage = Properties.Resources.有;
+                                        btnWeldSwitch.Checked = true;
+                                    }
+                                  
+                                }
+                                break;
+                            case "红光开关":
                             {
                                 if (((byte)value) == 0x55)
                                 {
@@ -2690,7 +2734,11 @@ namespace 星链激光制管机控制软件
                             break;
 
                     }
-
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message + "\r\n" + ex.StackTrace);
+                    }
 
                 });
             }
@@ -3027,7 +3075,7 @@ namespace 星链激光制管机控制软件
         public static byte[] getBooleanArray(byte b)
         {
             byte[] array = new byte[8];
-            for (int i = 7; i >= 0; i--)
+            for (int i = 0; i <8; i++)
             {
                 array[i] = (byte)(b & 1);
                 b = (byte)(b >> 1);
