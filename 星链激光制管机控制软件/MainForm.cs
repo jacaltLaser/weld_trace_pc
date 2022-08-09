@@ -43,9 +43,8 @@ namespace 星链激光制管机控制软件
             Thread threadA = new Thread(Play_Camera);
             threadA.Start();
 
-
             label_AlarmInfo.Text = "";
-
+            Common.CreateSerialPort();
             InitSendimer();
             InitDataParserTimer();
 
@@ -638,31 +637,7 @@ namespace 星链激光制管机控制软件
         // 定义通信OutLaserTimer
         System.Timers.Timer OutLaserTimer = null;
 
-        /// <summary>
-        /// 定时开关激光器出光
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OutLaserTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-
-            if (picLaser_Status.BackgroundImage == Properties.Resources.无)
-            {
-                // 开始出光
-                byte[] open = new byte[] { 0xAA };
-                byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.MCU_Switch, open);
-                Common.SendQueue_PC.Enqueue(m_SendAryPC);
-
-            }
-            else
-            {
-                // 结束出光
-                byte[] close = new byte[] { 0x55 };
-                byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.MCU_Switch, close);
-                Common.SendQueue_PC.Enqueue(m_SendAryPC);
-            }
-
-        }
+        
 
         /// <summary>
         /// 点击焊接按钮
@@ -687,7 +662,7 @@ namespace 星链激光制管机控制软件
                                 //设置定时间隔(毫秒为单位)
                                 OutLaserTimer.Interval = Convert.ToInt32(interval);
                                 //设置执行一次（false）还是一直执行(true)
-                                OutLaserTimer.AutoReset = true;
+                                OutLaserTimer.AutoReset = false;
                                 //设置是否执行System.Timers.Timer.Elapsed事件
                                 OutLaserTimer.Enabled = true;
                                 //绑定Elapsed事件
@@ -696,20 +671,21 @@ namespace 星链激光制管机控制软件
                             else
                             {
                                 MessageBox.Show("间隔时长不能为小数！");
+                                return;
                             }
                         }
                         else
                         {
                             MessageBox.Show("间隔时长必须为整数！");
+                            return;
                         }
                     }
-                    else
-                    {
-                        // 开始出光
-                        byte[] open = new byte[] { 0xAA };
-                        byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.SIM_Ctrl, open);
-                        Common.SendQueue_PC.Enqueue(m_SendAryPC);
-                    }
+
+                    // 开始出光
+                    byte[] open = new byte[] { 0xAA };
+                    byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.SIM_Ctrl, open);
+                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
+
                 }
                 else
                 {
@@ -726,6 +702,23 @@ namespace 星链激光制管机控制软件
                     Common.SendQueue_PC.Enqueue(m_SendAryPC);
                 }
             }
+        }
+
+        /// <summary>
+        /// 定时开关激光器出光
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OutLaserTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            if (picLaser_Status.BackgroundImage != Properties.Resources.无)
+            {
+                // 结束出光
+                byte[] close = new byte[] { 0x55 };
+                byte[] m_SendAryPC = Common.generateSendData(Global.LaserDevice_Commands.DataHead_sendLaserDevice, Global.LaserDevice_Commands.Address_LaserDevice, Global.DataWrite, Global.LaserDevice_Commands.SIM_Ctrl, close);
+                Common.SendQueue_PC.Enqueue(m_SendAryPC);
+            }
+
         }
 
         /// <summary>
@@ -1409,7 +1402,7 @@ namespace 星链激光制管机控制软件
         private void InitDataParserTimer()
         {
             //设置定时间隔(毫秒为单位)
-            DataParserTimer.Interval = 200;
+            DataParserTimer.Interval = 80;
             //设置执行一次（false）还是一直执行(true)
             DataParserTimer.AutoReset = true;
             //设置是否执行System.Timers.Timer.Elapsed事件
@@ -1418,8 +1411,6 @@ namespace 星链激光制管机控制软件
             DataParserTimer.Elapsed += DataParserTimer_Elapsed;
 
         }
-
-
 
         /// <summary>
         /// 定时解析数据
@@ -1435,205 +1426,208 @@ namespace 星链激光制管机控制软件
                 {
                     if (Common.m_ListRecData.Count > 0)
                     {
-                        notCommDataCount = 0;
-
-                        if (Common.m_ListRecData[0] != null)
+                        while (Common.m_ListRecData.Count > 0) 
                         {
-                            byte[] m_ReceiveDataAry = Common.m_ListRecData[0].ToArray();
+                            notCommDataCount = 0;
 
-                            int header = m_ReceiveDataAry[0] * 256 + m_ReceiveDataAry[1];
-                            int len = m_ReceiveDataAry[2];
-                            int Cmd = m_ReceiveDataAry[4];
-
-                            //if (this.IsHandleCreated)
-                            //{
-                            //    this.Invoke((EventHandler)delegate
-                            //    {
-                            //        string s = "";
-                            //        foreach(byte b in m_ReceiveDataAry)
-                            //        {
-                            //            s += b.ToString("X2") + " ";
-                            //        }
-
-                            //        textBox1.Text += s+ "\r\n"; ;
-                            //    });
-                            //}
-
-                            if (header == Global.ContrlBoard_Commands.DataHead_receiveContrlBoard)
+                            if (Common.m_ListRecData[0] != null)
                             {
-                                                   
-                                switch (Cmd)
+                                byte[] m_ReceiveDataAry = Common.m_ListRecData[0].ToArray();
+
+                                int header = m_ReceiveDataAry[0] * 256 + m_ReceiveDataAry[1];
+                                int len = m_ReceiveDataAry[2];
+                                int Cmd = m_ReceiveDataAry[4];
+
+                                //if (this.IsHandleCreated)
+                                //{
+                                //    this.Invoke((EventHandler)delegate
+                                //    {
+                                //        string s = "";
+                                //        foreach(byte b in m_ReceiveDataAry)
+                                //        {
+                                //            s += b.ToString("X2") + " ";
+                                //        }
+
+                                //        textBox1.Text += s+ "\r\n"; ;
+                                //    });
+                                //}
+
+                                if (header == Global.ContrlBoard_Commands.DataHead_receiveContrlBoard)
                                 {
 
-                                    case Global.ContrlBoard_Commands.MotorAngle_X:
-                                        displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.MotorAngle_Y:
-                                        displayStatusPara_ContrlBoard("电机Y角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.AlarmInfo:
-                                        displayStatusPara_ContrlBoard("报警信息", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
-                                    //case Global.ContrlBoard_Commands.WaterTankOpera:
-                                    //    displayStatusPara_ContrlBoard("水箱", m_ReceiveDataAry[5]);
-                                    //    break;
-                                    case Global.ContrlBoard_Commands.CurrTemper:
-                                        displayStatusPara_ContrlBoard("当前温度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
-                                    //case Global.ContrlBoard_Commands.AirConditionerOpera:
-                                    //    displayStatusPara_ContrlBoard("空调", m_ReceiveDataAry[5]);
-                                    //    break;
-                                    case Global.ContrlBoard_Commands.CurrHumidity:
-                                        displayStatusPara_ContrlBoard("当前湿度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.CurrWeldLength:
-                                        displayStatusPara_ContrlBoard("当前焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.TotaWeldLength:
-                                        displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.CurrMachineTime:
-                                        displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7).ToArray());
-                                        break;
-                                    case Global.ContrlBoard_Commands.WeldTrackingSwitch:
-                                        displayStatusPara_ContrlBoard("焊接轨迹跟踪开关", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.ContrlBoard_Commands.WeldPosition:
-                                        displayStatusPara_ContrlBoard("焊接轨迹坐标", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
+                                    switch (Cmd)
+                                    {
 
-                                    case Global.ContrlBoard_Commands.AllParameter:
-                                        displayAllPara_ContrlBoard(m_ReceiveDataAry);
-                                        break;
+                                        case Global.ContrlBoard_Commands.MotorAngle_X:
+                                            displayStatusPara_ContrlBoard("电机X角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.MotorAngle_Y:
+                                            displayStatusPara_ContrlBoard("电机Y角度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.AlarmInfo:
+                                            displayStatusPara_ContrlBoard("报警信息", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
+                                        //case Global.ContrlBoard_Commands.WaterTankOpera:
+                                        //    displayStatusPara_ContrlBoard("水箱", m_ReceiveDataAry[5]);
+                                        //    break;
+                                        case Global.ContrlBoard_Commands.CurrTemper:
+                                            displayStatusPara_ContrlBoard("当前温度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
+                                        //case Global.ContrlBoard_Commands.AirConditionerOpera:
+                                        //    displayStatusPara_ContrlBoard("空调", m_ReceiveDataAry[5]);
+                                        //    break;
+                                        case Global.ContrlBoard_Commands.CurrHumidity:
+                                            displayStatusPara_ContrlBoard("当前湿度", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.CurrWeldLength:
+                                            displayStatusPara_ContrlBoard("当前焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.TotaWeldLength:
+                                            displayStatusPara_ContrlBoard("总焊接长度", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.CurrMachineTime:
+                                            displayStatusPara_ContrlBoard("当前机器时间", m_ReceiveDataAry.Skip(5).Take(7).ToArray());
+                                            break;
+                                        case Global.ContrlBoard_Commands.WeldTrackingSwitch:
+                                            displayStatusPara_ContrlBoard("焊接轨迹跟踪开关", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.ContrlBoard_Commands.WeldPosition:
+                                            displayStatusPara_ContrlBoard("焊接轨迹坐标", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
 
-                                    default:
+                                        case Global.ContrlBoard_Commands.AllParameter:
+                                            displayAllPara_ContrlBoard(m_ReceiveDataAry);
+                                            break;
+
+                                        default:
+                                            {
+                                                if (this.IsHandleCreated)
+                                                {
+                                                    this.Invoke((EventHandler)delegate
+                                                    {
+                                                        label_AlarmInfo.Text = "控制板通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                    }
+
+                                    if (!ContrlBoardConnect)
+                                    {
+                                        // 读取--所有参数
+                                        byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
+                                        Common.SendQueue_PC.Enqueue(m_SendAryPC);
+                                    }
+
+                                    ContrlBoardConnect = true;
+                                    notContrlBoardCommCount = 0;
+                                }
+                                else
+                                {
+                                    if (ContrlBoardConnect)
+                                    {
+                                        //if (this.IsHandleCreated)
+                                        //{
+                                        //    this.Invoke((EventHandler)delegate
+                                        //    {
+                                        //        label_AlarmInfo.Text = notContrlBoardCommCount.ToString();
+                                        //    });
+                                        //}
+                                        notContrlBoardCommCount++;
+                                        if (notContrlBoardCommCount > 20)
                                         {
+                                            ContrlBoardConnect = false;
+                                            notContrlBoardCommCount = 0;
                                             if (this.IsHandleCreated)
                                             {
                                                 this.Invoke((EventHandler)delegate
                                                 {
-                                                    label_AlarmInfo.Text = "控制板通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                    label_AlarmInfo.Text = "与控制板的通信已发生中断！";
                                                 });
                                             }
                                         }
-                                        break;
-                                }
-
-                                if (!ContrlBoardConnect)
-                                {
-                                    // 读取--所有参数
-                                    byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, Global.DataRead, Global.ContrlBoard_Commands.AllParameter);
-                                    Common.SendQueue_PC.Enqueue(m_SendAryPC);
-                                }
-
-                                ContrlBoardConnect = true;
-                                notContrlBoardCommCount = 0;
-                            }
-                            else
-                            {
-                                if (ContrlBoardConnect)
-                                {
-                                    //if (this.IsHandleCreated)
-                                    //{
-                                    //    this.Invoke((EventHandler)delegate
-                                    //    {
-                                    //        label_AlarmInfo.Text = notContrlBoardCommCount.ToString();
-                                    //    });
-                                    //}
-                                    notContrlBoardCommCount++;
-                                    if (notContrlBoardCommCount > 30)
-                                    {
-                                        ContrlBoardConnect = false;
-                                        notContrlBoardCommCount = 0;
-                                        if (this.IsHandleCreated)
-                                        {
-                                            this.Invoke((EventHandler)delegate
-                                            {
-                                                label_AlarmInfo.Text = "与控制板的通信已发生中断！";
-                                            });
-                                        }
                                     }
                                 }
-                            }
 
 
 
-                            if (header == Global.LaserDevice_Commands.DataHead_receiveLaserDevice)
-                            {
-                                switch (Cmd)
+                                if (header == Global.LaserDevice_Commands.DataHead_receiveLaserDevice)
                                 {
-                                    case Global.LaserDevice_Commands.LaserPower:
-                                        displayStatusPara_LaserDevice("激光输出功率", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.LaserDevice_Commands.RedSwitch:
-                                        displayStatusPara_LaserDevice("红光开关", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.LaserDevice_Commands.ModeSwitch:
-                                        displayStatusPara_LaserDevice("内外控制模式", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.LaserDevice_Commands.SIM_EN:
-                                        displayStatusPara_LaserDevice("内控使能", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.LaserDevice_Commands.SIM_Ctrl:
-                                        displayStatusPara_LaserDevice("内控出光", m_ReceiveDataAry[5]);
-                                        break;
-                                    case Global.LaserDevice_Commands.AlarmInfo:
-                                        displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
-                                        break;
-                                    case Global.LaserDevice_Commands.StateInfo1:
-                                        displayStatusPara_LaserDevice("状态信息1", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
-                                    case Global.LaserDevice_Commands.StateInfo2:
-                                        displayStatusPara_LaserDevice("状态信息2", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
-                                        break;
+                                    switch (Cmd)
+                                    {
+                                        case Global.LaserDevice_Commands.LaserPower:
+                                            displayStatusPara_LaserDevice("激光输出功率", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.LaserDevice_Commands.RedSwitch:
+                                            displayStatusPara_LaserDevice("红光开关", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.LaserDevice_Commands.ModeSwitch:
+                                            displayStatusPara_LaserDevice("内外控制模式", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.LaserDevice_Commands.SIM_EN:
+                                            displayStatusPara_LaserDevice("内控使能", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.LaserDevice_Commands.SIM_Ctrl:
+                                            displayStatusPara_LaserDevice("内控出光", m_ReceiveDataAry[5]);
+                                            break;
+                                        case Global.LaserDevice_Commands.AlarmInfo:
+                                            displayStatusPara_LaserDevice("报警信息", m_ReceiveDataAry.Skip(5).Take(4).ToArray());
+                                            break;
+                                        case Global.LaserDevice_Commands.StateInfo1:
+                                            displayStatusPara_LaserDevice("状态信息1", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
+                                        case Global.LaserDevice_Commands.StateInfo2:
+                                            displayStatusPara_LaserDevice("状态信息2", m_ReceiveDataAry.Skip(5).Take(2).ToArray());
+                                            break;
 
 
-                                    default:
+                                        default:
+                                            {
+                                                if (this.IsHandleCreated)
+                                                {
+                                                    this.Invoke((EventHandler)delegate
+                                                    {
+                                                        label_AlarmInfo.Text = "激光器通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                    });
+                                                }
+                                            }
+                                            break;
+                                    }
+
+                                    laserConnect = true;
+                                    notLaserCommCount = 0;
+
+                                }
+                                else
+                                {
+                                    if (laserConnect)
+                                    {
+                                        notLaserCommCount++;
+                                        if (notLaserCommCount > 20)
                                         {
+                                            laserConnect = false;
+                                            notLaserCommCount = 0;
                                             if (this.IsHandleCreated)
                                             {
                                                 this.Invoke((EventHandler)delegate
                                                 {
-                                                    label_AlarmInfo.Text = "激光器通信：收到未知的通信命令码 0x" + m_ReceiveDataAry[4].ToString("X2");
+                                                    label_AlarmInfo.Text = "与激光器的通信已发生中断！";
                                                 });
                                             }
                                         }
-                                        break;
-                                }
-
-                                laserConnect = true;
-                                notLaserCommCount = 0;
-
-                            }
-                            else
-                            {
-                                if (laserConnect)
-                                {
-                                    notLaserCommCount++;
-                                    if (notLaserCommCount > 15)
-                                    {
-                                        laserConnect = false;
-                                        notLaserCommCount = 0;
-                                        if (this.IsHandleCreated)
-                                        {
-                                            this.Invoke((EventHandler)delegate
-                                            {
-                                                label_AlarmInfo.Text = "与激光器的通信已发生中断！";
-                                            });
-                                        }
                                     }
                                 }
+
+
+
                             }
+                            if (Common.m_ListRecData.Count > 0)
+                                Common.m_ListRecData.RemoveAt(0);
 
-
+                            notCommDataCount = 0;
 
                         }
-                        if (Common.m_ListRecData.Count > 0)
-                            Common.m_ListRecData.RemoveAt(0);
-
-                        notCommDataCount = 0;
-
-
+                        
                     }
                     else
                     {
@@ -2009,226 +2003,220 @@ namespace 星链激光制管机控制软件
                 this.Invoke((EventHandler)delegate
                 {
                     try
-                    { 
-                    switch (displayname)
                     {
-                        case "电机X角度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
-                                label_Angle_X.Text = f_value.ToString("0.0 °");
-                                label_Angle_X.Tag = f_value;
-                           //     MessageBox.Show("测试位置2");
-                            }
-                            break;
-                        case "电机Y角度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
-                                label_Angle_Y.Text = f_value.ToString("0.0 °");
-                                label_Angle_Y.Tag = f_value;
-                            }
-                            break;
-                        //case "水箱":
-                        //    {
-
-                        //        if (((byte)value) == 0x00)
-                        //        {
-                        //            labelWaterTank_SwitchStatus.ForeColor = ThemeTextColor;
-                        //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.无;
-                        //            btnWaterTankSwitch.Checked = false;
-                        //        }
-                        //        else if (((byte)value) == 0x01)
-                        //        {
-                        //            labelWaterTank_SwitchStatus.ForeColor = Color.Aqua;
-                        //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.有;
-                        //            btnWaterTankSwitch.Checked = true;
-                        //        }
-                        //    }
-                        //    break;
-                        case "当前温度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
-                                if (f_value > 1)
+                        switch (displayname)
+                        {
+                            case "电机X角度":
                                 {
-                                    btnWaterTankSwitch.Checked = true;
-                                    if (f_value > 80)
-                                    {
-                                        labelWaterTank_Temperature.ForeColor = Color.Red;
-                                        picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_alarm;
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
+                                    label_Angle_X.Text = f_value.ToString("0.0 °");
+                                    label_Angle_X.Tag = f_value;
+                                    //     MessageBox.Show("测试位置2");
+                                }
+                                break;
+                            case "电机Y角度":
+                                {
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = (bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 1.8f;
+                                    label_Angle_Y.Text = f_value.ToString("0.0 °");
+                                    label_Angle_Y.Tag = f_value;
+                                }
+                                break;
+                            //case "水箱":
+                            //    {
 
+                            //        if (((byte)value) == 0x00)
+                            //        {
+                            //            labelWaterTank_SwitchStatus.ForeColor = ThemeTextColor;
+                            //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.无;
+                            //            btnWaterTankSwitch.Checked = false;
+                            //        }
+                            //        else if (((byte)value) == 0x01)
+                            //        {
+                            //            labelWaterTank_SwitchStatus.ForeColor = Color.Aqua;
+                            //            picWaterTank_SwitchStatus.BackgroundImage = Properties.Resources.有;
+                            //            btnWaterTankSwitch.Checked = true;
+                            //        }
+                            //    }
+                            //    break;
+                            case "当前温度":
+                                {
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
+                                    if (f_value > 1)
+                                    {
+                                        btnWaterTankSwitch.Checked = true;
+                                        if (f_value > 80)
+                                        {
+                                            labelWaterTank_Temperature.ForeColor = Color.Red;
+                                            picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_alarm;
+
+                                        }
+                                        else
+                                        {
+                                            labelWaterTank_Temperature.ForeColor = Color.Aqua;
+                                            picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_normal;
+                                        }
+                                        labelWaterTank_Temperature.Text = f_value.ToString("0.0℃");
                                     }
                                     else
                                     {
-                                        labelWaterTank_Temperature.ForeColor = Color.Aqua;
-                                        picWaterTank_Temperature.BackgroundImage = Properties.Resources.温度_normal;
+                                        btnWaterTankSwitch.Checked = false;
                                     }
-                                    labelWaterTank_Temperature.Text = f_value.ToString("0.0℃");
                                 }
-                                else
+                                break;
+                            case "报警信息":
                                 {
-                                    btnWaterTankSwitch.Checked = false;
-                                }
-                            }
-                            break;
-                        case "报警信息":
-                            {
-                                byte[] bParas = (byte[])value;
-                                string strAlarm = "";
-                                byte W1 = bParas[0];
-                                byte W2 = bParas[1];
+                                    byte[] bParas = (byte[])value;
+                                    string strAlarm = "";
+                                    byte W1 = bParas[0];
+                                    byte W2 = bParas[1];
 
-                                byte[] W1_bitArray = getBooleanArray(W1);
-                                if (W1_bitArray[0] == 1)
-                                {
-                                    strAlarm += "电机X错误";
-                                }
-                                if (W1_bitArray[1] == 1)
-                                {
-                                    strAlarm += "电机Y错误";
-                                }
-                                if (W1_bitArray[2] == 1)
-                                {
-                                    strAlarm += "电机Z错误";
-                                }
-                                if (W1_bitArray[3] == 1)
-                                {
-                                    strAlarm += "水冷机错误";
-                                }
-                                if (W1_bitArray[4] == 1)
-                                {
-                                    if (W2 == 0x01)
-                                        strAlarm += "温湿度模块初始化错误";
-                                    else if (W2 == 0x01)
+                                    byte[] W1_bitArray = getBooleanArray(W1);
+                                    if (W1_bitArray[0] == 1)
+                                    {
+                                        strAlarm += "电机X错误";
+                                    }
+                                    if (W1_bitArray[1] == 1)
+                                    {
+                                        strAlarm += "电机Y错误";
+                                    }
+                                    if (W1_bitArray[2] == 1)
+                                    {
+                                        strAlarm += "温度模块错误";
+                                    }
+                                    if (W1_bitArray[3] == 1)
+                                    {
+                                        strAlarm += "湿度模块错误";
+                                    }
+                                    if (W1_bitArray[4] == 1)
+                                    {
                                         strAlarm += "内存24512 初始化错误";
-                                    else
-                                        strAlarm += "其他错误";
+                                    }
 
+
+                                    label_AlarmInfo.Text = strAlarm;
                                 }
-
-
-                                label_AlarmInfo.Text = strAlarm;
-                            }
-                            break;
-                        //case "空调":
-                        //    {
-                        //        if (((byte)value) == 0x00)
-                        //        {
-                        //            labelAirConditione_SwitchStatus.ForeColor = ThemeTextColor;
-                        //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.无;
-                        //            btnAirConditioneSwitch.Checked = false;
-                        //        }
-                        //        else if (((byte)value) == 0x01)
-                        //        {
-                        //            labelAirConditione_SwitchStatus.ForeColor = Color.Aqua;
-                        //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.有;
-                        //            btnAirConditioneSwitch.Checked = true;
-                        //        }
-                        //    }
-                        //    break;
-                        case "当前湿度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
-                                if (f_value > 1)
+                                break;
+                            //case "空调":
+                            //    {
+                            //        if (((byte)value) == 0x00)
+                            //        {
+                            //            labelAirConditione_SwitchStatus.ForeColor = ThemeTextColor;
+                            //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.无;
+                            //            btnAirConditioneSwitch.Checked = false;
+                            //        }
+                            //        else if (((byte)value) == 0x01)
+                            //        {
+                            //            labelAirConditione_SwitchStatus.ForeColor = Color.Aqua;
+                            //            picAirConditione_SwitchStatus.BackgroundImage = Properties.Resources.有;
+                            //            btnAirConditioneSwitch.Checked = true;
+                            //        }
+                            //    }
+                            //    break;
+                            case "当前湿度":
                                 {
-                                    btnAirConditioneSwitch.Checked = true;
-                                    if (f_value > 45)
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = (bParas[0] | (bParas[1] << 8)) * 0.1f;
+                                    if (f_value > 1)
                                     {
-                                        labelAirConditione_Humidity.ForeColor = Color.Red;
-                                        picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_alarm;
+                                        btnAirConditioneSwitch.Checked = true;
+                                        if (f_value > 45)
+                                        {
+                                            labelAirConditione_Humidity.ForeColor = Color.Red;
+                                            picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_alarm;
 
+                                        }
+                                        else
+                                        {
+                                            labelAirConditione_Humidity.ForeColor = Color.Aqua;
+                                            picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_normal;
+                                        }
+
+                                        labelAirConditione_Humidity.Text = f_value.ToString("0.0") + "%RH";
                                     }
                                     else
                                     {
-                                        labelAirConditione_Humidity.ForeColor = Color.Aqua;
-                                        picAirConditione_Humidity.BackgroundImage = Properties.Resources.湿度_normal;
+                                        btnAirConditioneSwitch.Checked = false;
                                     }
-
-                                    labelAirConditione_Humidity.Text = f_value.ToString("0.0") + "%RH";
                                 }
-                                else
+                                break;
+                            case "当前焊接长度":
                                 {
-                                    btnAirConditioneSwitch.Checked = false;
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
+                                    labelCurrWeldLength.Text = f_value.ToString("0.0");
+
+                                    //   "总焊接长度":
+
                                 }
-                            }
-                            break;
-                        case "当前焊接长度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
-                                labelCurrWeldLength.Text = f_value.ToString("0.0");
-
-                                //   "总焊接长度":
-
-                            }
-                            break;
-                        case "总焊接长度":
-                            {
-                                byte[] bParas = (byte[])value;
-                                double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
-                                labelTotalWeldLength.Text = f_value.ToString("0.0");
-                            }
-                            break;
-                        case "当前机器时间":
-                            {
-                                byte[] bParas = (byte[])value;
-                                string datetime = (bParas[0] | (bParas[1] << 8)) + "年" + ((int)bParas[2]).ToString("00") + "月" + bParas[3].ToString("00") + "日 " + bParas[4].ToString("00") + ":" + bParas[5].ToString("00") + ":" + bParas[6].ToString("00");
-                                labelCurrMachineTime.Text = datetime;
-                            }
-                            break;
-                        //case "焊接轨迹跟踪开关":
-                        //    {
-                        //        if (((byte)value) == 0x00)
-                        //        {
-                        //            btnWeldTrackingSwitch.Checked = false;
-                        //        }
-                        //        else if (((byte)value) == 0x01)
-                        //        {
-                        //            btnWeldTrackingSwitch.Checked = true;
-                        //        }
-                        //    }
-                        //    break;                       
-                        case "焊接轨迹跟踪开关":
-                            {
-                                if (((byte)value) == 0x00)
+                                break;
+                            case "总焊接长度":
                                 {
-                                    if (btnWeldTrackingSwitch.Checked != false)
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = ((bParas[0] | (bParas[1] << 8) | (bParas[2] << 16) | (bParas[3] << 24)) * 0.01f);
+                                    labelTotalWeldLength.Text = f_value.ToString("0.0");
+                                }
+                                break;
+                            case "当前机器时间":
+                                {
+                                    byte[] bParas = (byte[])value;
+                                    string datetime = (bParas[0] | (bParas[1] << 8)) + "年" + ((int)bParas[2]).ToString("00") + "月" + bParas[3].ToString("00") + "日 " + bParas[4].ToString("00") + ":" + bParas[5].ToString("00") + ":" + bParas[6].ToString("00");
+                                    labelCurrMachineTime.Text = datetime;
+                                }
+                                break;
+                            //case "焊接轨迹跟踪开关":
+                            //    {
+                            //        if (((byte)value) == 0x00)
+                            //        {
+                            //            btnWeldTrackingSwitch.Checked = false;
+                            //        }
+                            //        else if (((byte)value) == 0x01)
+                            //        {
+                            //            btnWeldTrackingSwitch.Checked = true;
+                            //        }
+                            //    }
+                            //    break;                       
+                            case "焊接轨迹跟踪开关":
+                                {
+                                    if (((byte)value) == 0x00)
                                     {
-                                        btnWeldTrackingSwitch.Checked = false;
+                                        if (btnWeldTrackingSwitch.Checked != false)
+                                        {
+                                            btnWeldTrackingSwitch.Checked = false;
+                                        }
+                                    }
+                                    else if (((byte)value) == 0x01)
+                                    {
+                                        if (btnWeldTrackingSwitch.Checked != true)
+                                            btnWeldTrackingSwitch.Checked = true;
                                     }
                                 }
-                                else if (((byte)value) == 0x01)
+                                break;
+                            case "焊接轨迹坐标":
                                 {
-                                    if (btnWeldTrackingSwitch.Checked != true)
-                                        btnWeldTrackingSwitch.Checked = true;
-                                }
-                            }
-                            break;
-                        case "焊接轨迹坐标":
-                            {
-                                byte[] bParas = (byte[])value;
-                               double f_value = (bParas[0] | (bParas[1] << 8)) * 0.01f;
-                                if (btnWeldTrackingSwitch.Checked)
-                                {
-                                    this.chart1.Series[0].Points.AddY(f_value);
+                                    byte[] bParas = (byte[])value;
+                                    double f_value = (bParas[0] | (bParas[1] << 8)) * 0.01f;
+                                    if (btnWeldTrackingSwitch.Checked)
+                                    {
+                                        this.chart1.Series[0].Points.AddY(f_value);
 
-                                    resetChartAreaAxisX_MaxMin();
-                                    resetChartAreaAxisY_MaxMin(f_value);
+                                        resetChartAreaAxisX_MaxMin();
+                                        resetChartAreaAxisY_MaxMin(f_value);
 
+                                    }
+                                    else
+                                    {
+                                        this.chart1.Series[0].Points.Clear();
+                                    }
                                 }
-                                else
-                                {
-                                    this.chart1.Series[0].Points.Clear();
-                                }
-                            }
-                            break;
+                                break;
 
-                        default:
-                            MessageBox.Show("控制板通信：收到未知的显示内容：" + displayname);
-                            break;
-                    }
+                            default:
+                                MessageBox.Show("控制板通信：收到未知的显示内容：" + displayname);
+                                break;
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -2252,34 +2240,35 @@ namespace 星链激光制管机控制软件
                 this.Invoke((EventHandler)delegate
                 {
                     try
-                    { 
-                    switch (displayname)
                     {
-                        case "激光输出功率":
-                            {
-                                int pout = Convert.ToInt16(value);
-                                LaserPower.Text = pout + "%";
-                                LaserPower.Value = pout;
-                            }
-                            break;
-                        case "内控使能":
-                            {
-                                if (((byte)value) == 0x55)
+                        switch (displayname)
+                        {
+                            case "激光输出功率":
                                 {
-                                    labelEnable_Status.ForeColor = ThemeTextColor;
-                                    picEnable_Status.BackgroundImage = Properties.Resources.无;
-                                    btnEnableSwitch.Checked = false;
+                                    int pout = Convert.ToInt16(value);
+                                    LaserPower.Text = pout + "%";
+                                    LaserPower.Value = pout;
+                                   
                                 }
-                                else if (((byte)value) == 0xAA)
+                                break;
+                            case "内控使能":
                                 {
-                                    labelEnable_Status.ForeColor = Color.Aqua;
-                                    picEnable_Status.BackgroundImage = Properties.Resources.有;
-                                    btnEnableSwitch.Checked = true;
-                                    if (btnRedlightSwitch.Checked)
-                                        sendRedlightSwitchCommands(false);
+                                    if (((byte)value) == 0x55)
+                                    {
+                                        labelEnable_Status.ForeColor = ThemeTextColor;
+                                        picEnable_Status.BackgroundImage = Properties.Resources.无;
+                                        btnEnableSwitch.Checked = false;
+                                    }
+                                    else if (((byte)value) == 0xAA)
+                                    {
+                                        labelEnable_Status.ForeColor = Color.Aqua;
+                                        picEnable_Status.BackgroundImage = Properties.Resources.有;
+                                        btnEnableSwitch.Checked = true;
+                                        if (btnRedlightSwitch.Checked)
+                                            sendRedlightSwitchCommands(false);
+                                    }
                                 }
-                            }
-                            break;
+                                break;
                             case "内控出光":
                                 {
                                     if (((byte)value) == 0x55)
@@ -2288,7 +2277,7 @@ namespace 星链激光制管机控制软件
                                         labelLaser_Status.ForeColor = ThemeTextColor;
                                         picLaser_Status.BackgroundImage = Properties.Resources.无;
                                         btnWeldSwitch.Checked = false;
-                                        
+
                                     }
                                     else if (((byte)value) == 0xAA)
                                     {
@@ -2297,443 +2286,632 @@ namespace 星链激光制管机控制软件
                                         picLaser_Status.BackgroundImage = Properties.Resources.有;
                                         btnWeldSwitch.Checked = true;
                                     }
-                                  
+
                                 }
                                 break;
                             case "红光开关":
-                            {
-                                if (((byte)value) == 0x55)
                                 {
-                                    labelRedlight_Status.ForeColor = ThemeTextColor;
-                                    picRedlight_Status.BackgroundImage = Properties.Resources.无;
-                                    btnRedlightSwitch.Checked = false;
+                                    if (((byte)value) == 0x55)
+                                    {
+                                        labelRedlight_Status.ForeColor = ThemeTextColor;
+                                        picRedlight_Status.BackgroundImage = Properties.Resources.无;
+                                        btnRedlightSwitch.Checked = false;
+                                    }
+                                    else if (((byte)value) == 0xAA)
+                                    {
+                                        labelRedlight_Status.ForeColor = Color.Aqua;
+                                        picRedlight_Status.BackgroundImage = Properties.Resources.有;
+                                        btnRedlightSwitch.Checked = true;
+                                        if (btnEnableSwitch.Checked)
+                                            sendEnableSwitchCommands(false);
+                                    }
                                 }
-                                else if (((byte)value) == 0xAA)
+                                break;
+                            case "内外控制模式":
                                 {
-                                    labelRedlight_Status.ForeColor = Color.Aqua;
-                                    picRedlight_Status.BackgroundImage = Properties.Resources.有;
-                                    btnRedlightSwitch.Checked = true;
-                                    if (btnEnableSwitch.Checked)
-                                        sendEnableSwitchCommands(false);
-                                }
-                            }
-                            break;
-                        case "内外控制模式":
-                            {
-                                if (((byte)value) == 0x55)
-                                {
-                                    displayState.display("控制模式：内控", StateColor.normalColor);
-                                    isInternalMode = true;
-                                    btnSetPower.Enabled = true;
-                                    btnEnableSwitch.Enabled = true;
-                                    btnRedlightSwitch.Enabled = true;
-                                    if (btnEnableSwitch.Checked)
-                                        btnWeldSwitch.Enabled = true;
-                                }
-                                else if (((byte)value) == 0xAA)
-                                {
-                                    displayState.display("控制模式：外控", StateColor.WarnColor);
-                                    isInternalMode = false;
-                                    btnSetPower.Enabled = false;
-                                    btnEnableSwitch.Enabled = false;
-                                    btnRedlightSwitch.Enabled = false;
-                                    btnWeldSwitch.Enabled = false;
+                                    if (((byte)value) == 0x55)
+                                    {
+                                        displayState.display("控制模式：外控", StateColor.WarnColor);
+                                        isInternalMode = false;
+                                        btnSetPower.Enabled = false;
+                                        btnEnableSwitch.Enabled = false;
+                                        btnRedlightSwitch.Enabled = false;
+                                        btnWeldSwitch.Enabled = false;
 
-                                    setInternalMode();
-                                }
-                              
-                            }
-                            break;
-                        case "报警信息":
-                            {
-                                string strAlarm = "";
-                                byte W1 = ((byte[])value)[0];
-                                byte W2 = ((byte[])value)[1];
-                                byte W3 = ((byte[])value)[2];
-                                byte W4 = ((byte[])value)[3];
-
-                                byte[] W1_bitArray = getBooleanArray(W1);
-                                byte[] W2_bitArray = getBooleanArray(W2);
-                                byte[] W3_bitArray = getBooleanArray(W3);
-                                byte[] W4_bitArray = getBooleanArray(W4);
-
-                                displayAlarm.clearItem();
-                                if (W1_bitArray[0] == 1)
-                                {
-                                    displayAlarm.display("过压告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[1] == 1)
-                                {
-                                    displayAlarm.display("欠压告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[2] == 1)
-                                {
-                                    displayAlarm.display("水流量告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[3] == 1)
-                                {
-                                    displayAlarm.display("急停告警", StateColor.AlarmColor);
-                                }
-
-                                if (W1_bitArray[4] == 1)
-                                {
-                                    displayAlarm.display("QBH 安装告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[5] == 1)
-                                {
-                                    displayAlarm.display("QBH 温度告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[6] == 1)
-                                {
-                                    displayAlarm.display("电水冷板温度告警", StateColor.AlarmColor);
-                                }
-                                if (W1_bitArray[7] == 1)
-                                {
-                                    displayAlarm.display("异常断电报警", StateColor.AlarmColor);
-                                }
-
-                                if (W2_bitArray[0] == 1)
-                                {
-                                    displayAlarm.display("泵源电流告警", StateColor.AlarmColor);
-                                }
-                                if (W2_bitArray[1] == 1)
-                                {
-                                    displayAlarm.display("泵源温度告警", StateColor.AlarmColor);
-                                }
-                                if (W2_bitArray[2] == 1)
-                                {
-                                    displayAlarm.display("PD_SD1 告警", StateColor.AlarmColor);
-                                }
-                                if (W2_bitArray[3] == 1)
-                                {
-                                    displayAlarm.display("PD1 告警", StateColor.AlarmColor);
-                                }
-                                if (W2_bitArray[4] == 1)
-                                {
-                                    displayAlarm.display("光模块温度告警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W2_bitArray[5] == 1)
-                                {
-                                    displayAlarm.display("光模块湿度告警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W2_bitArray[6] == 1)
-                                {
-                                    displayAlarm.display("红光电流告警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W2_bitArray[7] == 1)
-                                {
-                                    displayAlarm.display("剥模器1 温度告警", StateColor.AlarmColor);
-                                }
-
-                                if (W3_bitArray[0] == 1)
-                                {
-                                    displayAlarm.display("剥模器2 温度告警", StateColor.AlarmColor);
-                                }
-                                if (W3_bitArray[1] == 1)
-                                {
-                                    displayAlarm.display("光水冷板温度1 告警", StateColor.AlarmColor);
-                                }
-                                if (W3_bitArray[2] == 1)
-                                {
-                                    displayAlarm.display("光水冷板温度2 告警", StateColor.AlarmColor);
-                                }
-                                if (W3_bitArray[3] == 1)
-                                {
-                                    displayAlarm.display("电模块温度告警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W3_bitArray[4] == 1)
-                                {
-                                    displayAlarm.display("电模块湿度告警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W3_bitArray[5] == 1)
-                                {
-                                    displayAlarm.display("Power AC Alarm", StateColor.AlarmColor);
-                                }
-                                if (W3_bitArray[6] == 1)
-                                {
-                                    displayAlarm.display("Power DC Alarm", StateColor.AlarmColor);
-                                }
-                                if (W3_bitArray[7] == 1)
-                                {
-                                    displayAlarm.display("PD2 告警", StateColor.AlarmColor);
-                                }
-
-                                if (W4_bitArray[0] == 1)
-                                {
-                                    displayAlarm.display("超强回光告警", StateColor.AlarmColor);
-                                }
-                                if (W4_bitArray[1] == 1)
-                                {
-                                    displayAlarm.display("普通回光告警", StateColor.AlarmColor);
-                                }
-                                if (W4_bitArray[2] == 1)
-                                {
-                                    displayAlarm.display("回光预警(非致命)", StateColor.WarnColor);
-                                }
-                                if (W4_bitArray[3] == 1)
-                                {
-                                    displayAlarm.display("合束器温度告警", StateColor.AlarmColor);
-                                }
-                                if (W4_bitArray[4] == 1)
-                                {
-                                    displayAlarm.display("FPGA 加载失败告警", StateColor.AlarmColor);
-                                }
-                                if (W4_bitArray[5] == 1)
-                                {
-                                    displayAlarm.display("FPGA 握手失败告警", StateColor.AlarmColor);
-                                }
-                                if (W4_bitArray[6] == 1)
-                                {
-                                    displayAlarm.display("系统时钟失效(非致命)", StateColor.WarnColor);
-                                }
-                                if (W4_bitArray[7] == 1)
-                                {
-                                    displayAlarm.display("水冷板低温告警", StateColor.AlarmColor);
-                                }
-
-                                if (strAlarm != "")
-                                {
-                                    labelAlarm_Status.ForeColor = Color.Red;
-                                    picAlarm_Status.BackgroundImage = Properties.Resources.激光器_alarm;
-                                }
-                                else
-                                {
-                                    labelAlarm_Status.ForeColor = ThemeTextColor;
-                                    picAlarm_Status.BackgroundImage = Properties.Resources.无;
-                                }
-
-
-                            }
-                            break;
-                        case "状态信息1":
-                            {
-
-                                byte S1 = ((byte[])value)[0];
-                                byte S2 = ((byte[])value)[1];
-
-                                byte[] S1_bitArray = getBooleanArray(S1);
-                                byte[] S2_bitArray = getBooleanArray(S2);
-
-                                displayState.clearItem();
-                                // 内外控指示，0 - 外控，1 - 内控
-                                if (S1_bitArray[0] == 1)
-                                {
-                                    displayState.display("控制模式：内控", StateColor.normalColor);
-                                    isInternalMode = true;
-                                    btnSetPower.Enabled = true;
-                                    btnEnableSwitch.Enabled = true;
-                                    btnRedlightSwitch.Enabled = true;
-                                    if (btnEnableSwitch.Checked)
-                                        btnWeldSwitch.Enabled = true;
-                                }
-                                else
-                                {
-                                    displayState.display("控制模式：外控", StateColor.WarnColor);
-                                    isInternalMode = false;
-                                    btnSetPower.Enabled = false;
-                                    btnEnableSwitch.Enabled = false;
-                                    btnRedlightSwitch.Enabled = false;
-                                    btnWeldSwitch.Enabled = false;
-
-                                    setInternalMode();
-                                }
-                                // 激光器出光指示，0 - 没出光，1 - 出光
-                                if (S1_bitArray[1] == 1)
-                                {
-                                    displayState.display("激光器出光：出光", StateColor.normalColor);
-                                    labelLaser_Status.ForeColor = Color.Aqua;
-                                    picLaser_Status.BackgroundImage = Properties.Resources.有;
-                                    btnWeldSwitch.Checked = true;
-                                }
-                                else
-                                {
-                                    displayState.display("激光器出光：没出光", StateColor.ShutColor);
-                                    labelLaser_Status.ForeColor = ThemeTextColor;
-                                    picLaser_Status.BackgroundImage = Properties.Resources.无;
-                                    btnWeldSwitch.Checked = false;
-                                }
-                                // 主电源启动指示，0 - 关闭，1 - 启动
-                                if (S1_bitArray[2] == 1)
-                                {
-                                    displayState.display("主电源：启动", StateColor.normalColor);
-                                    labelPower_Status.ForeColor = Color.Aqua;
-                                    picPower_Status.BackgroundImage = Properties.Resources.有;
-                                }
-                                else
-                                {
-                                    displayState.display("主电源：关闭", StateColor.ShutColor);
-                                    labelPower_Status.ForeColor = ThemeTextColor;
-                                    picPower_Status.BackgroundImage = Properties.Resources.无;
-                                }
-
-                                if (S1_bitArray[3] == 1)
-                                {
+                                        setInternalMode();
+                                        
+                                    }
+                                    else if (((byte)value) == 0xAA)
+                                    {
+                                        displayState.display("控制模式：内控", StateColor.normalColor);
+                                        isInternalMode = true;
+                                        btnSetPower.Enabled = true;
+                                        btnEnableSwitch.Enabled = true;
+                                        btnRedlightSwitch.Enabled = true;
+                                        if (btnEnableSwitch.Checked)
+                                            btnWeldSwitch.Enabled = true;
+                                    }
 
                                 }
-                                if (S1_bitArray[4] == 1)
+                                break;
+                            case "报警信息":
                                 {
+                                    bool FlagAlarm = false;
+                                    byte W1 = ((byte[])value)[0];
+                                    byte W2 = ((byte[])value)[1];
+                                    byte W3 = ((byte[])value)[2];
+                                    byte W4 = ((byte[])value)[3];
+
+                                    byte[] W1_bitArray = getBooleanArray(W1);
+                                    byte[] W2_bitArray = getBooleanArray(W2);
+                                    byte[] W3_bitArray = getBooleanArray(W3);
+                                    byte[] W4_bitArray = getBooleanArray(W4);
+
+                                 //   displayAlarm.clearItem();
+                                    if (W1_bitArray[0] == 1)
+                                    {
+                                        displayAlarm.display("过压告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("过压告警");
+                                    }
+                                    if (W1_bitArray[1] == 1)
+                                    {
+                                        displayAlarm.display("欠压告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("欠压告警");
+                                    }
+                                    if (W1_bitArray[2] == 1)
+                                    {
+                                        displayAlarm.display("水流量告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("水流量告警");
+                                    }
+                                    if (W1_bitArray[3] == 1)
+                                    {
+                                        displayAlarm.display("急停告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("急停告警");
+                                    }
+                                    if (W1_bitArray[4] == 1)
+                                    {
+                                        displayAlarm.display("QBH 安装告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("QBH 安装告警");
+                                    }
+                                    if (W1_bitArray[5] == 1)
+                                    {
+                                        displayAlarm.display("QBH 温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("QBH 温度告警");
+                                    }
+                                    if (W1_bitArray[6] == 1)
+                                    {
+                                        displayAlarm.display("电水冷板温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("电水冷板温度告警");
+                                    }
+                                    if (W1_bitArray[7] == 1)
+                                    {
+                                        displayAlarm.display("异常断电报警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("异常断电报警");
+                                    }
+                                    if (W2_bitArray[0] == 1)
+                                    {
+                                        displayAlarm.display("泵源电流告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("泵源电流告警");
+                                    }
+                                    if (W2_bitArray[1] == 1)
+                                    {
+                                        displayAlarm.display("泵源温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("泵源温度告警");
+                                    }
+                                    if (W2_bitArray[2] == 1)
+                                    {
+                                        displayAlarm.display("PD_SD1 告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("PD_SD1 告警");
+                                    }
+                                    if (W2_bitArray[3] == 1)
+                                    {
+                                        displayAlarm.display("PD1 告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("PD1 告警");
+                                    }
+                                    if (W2_bitArray[4] == 1)
+                                    {
+                                        displayAlarm.display("光模块温度告警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("光模块温度告警(非致命)");
+                                    }
+                                    if (W2_bitArray[5] == 1)
+                                    {
+                                        displayAlarm.display("光模块湿度告警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("光模块湿度告警(非致命)");
+                                    }
+                                    if (W2_bitArray[6] == 1)
+                                    {
+                                        displayAlarm.display("红光电流告警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("红光电流告警(非致命)");
+                                    }
+                                    if (W2_bitArray[7] == 1)
+                                    {
+                                        displayAlarm.display("剥模器1 温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("剥模器1 温度告警");
+                                    }
+                                    if (W3_bitArray[0] == 1)
+                                    {
+                                        displayAlarm.display("剥模器2 温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("剥模器2 温度告警");
+                                    }
+                                    if (W3_bitArray[1] == 1)
+                                    {
+                                        displayAlarm.display("光水冷板温度1 告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("光水冷板温度1 告警");
+                                    }
+                                    if (W3_bitArray[2] == 1)
+                                    {
+                                        displayAlarm.display("光水冷板温度2 告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("光水冷板温度2 告警");
+                                    }
+                                    if (W3_bitArray[3] == 1)
+                                    {
+                                        displayAlarm.display("电模块温度告警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("电模块温度告警(非致命)");
+                                    }
+                                    if (W3_bitArray[4] == 1)
+                                    {
+                                        displayAlarm.display("电模块湿度告警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("电模块湿度告警(非致命)");
+                                    }
+                                    if (W3_bitArray[5] == 1)
+                                    {
+                                        displayAlarm.display("Power AC Alarm", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("Power AC Alarm");
+                                    }
+                                    if (W3_bitArray[6] == 1)
+                                    {
+                                        displayAlarm.display("Power DC Alarm", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("Power DC Alarm");
+                                    }
+                                    if (W3_bitArray[7] == 1)
+                                    {
+                                        displayAlarm.display("PD2 告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("PD2 告警");
+                                    }
+                                    if (W4_bitArray[0] == 1)
+                                    {
+                                        displayAlarm.display("超强回光告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("超强回光告警");
+                                    }
+                                    if (W4_bitArray[1] == 1)
+                                    {
+                                        displayAlarm.display("普通回光告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("普通回光告警");
+                                    }
+                                    if (W4_bitArray[2] == 1)
+                                    {
+                                        displayAlarm.display("回光预警(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("回光预警(非致命)");
+                                    }
+                                    if (W4_bitArray[3] == 1)
+                                    {
+                                        displayAlarm.display("合束器温度告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("合束器温度告警");
+                                    }
+                                    if (W4_bitArray[4] == 1)
+                                    {
+                                        displayAlarm.display("FPGA 加载失败告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("FPGA 加载失败告警");
+                                    }
+                                    if (W4_bitArray[5] == 1)
+                                    {
+                                        displayAlarm.display("FPGA 握手失败告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("FPGA 握手失败告警");
+                                    }
+                                    if (W4_bitArray[6] == 1)
+                                    {
+                                        displayAlarm.display("系统时钟失效(非致命)", StateColor.WarnColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("系统时钟失效(非致命)");
+                                    }
+                                    if (W4_bitArray[7] == 1)
+                                    {
+                                        displayAlarm.display("水冷板低温告警", StateColor.AlarmColor);
+                                        FlagAlarm = true;
+                                    }
+                                    else
+                                    {
+                                        displayAlarm.delete("水冷板低温告警");
+                                    }
+
+                                    if (FlagAlarm)
+                                    {
+                                        labelAlarm_Status.ForeColor = Color.Red;
+                                        picAlarm_Status.BackgroundImage = Properties.Resources.激光器_alarm;
+                                    }
+                                    else
+                                    {
+                                        labelAlarm_Status.ForeColor = ThemeTextColor;
+                                        picAlarm_Status.BackgroundImage = Properties.Resources.无;
+                                    }
+
 
                                 }
-                                // 结露指示，0 - 正常，1 - 报警
-                                if (S1_bitArray[5] == 1)
-                                {
-                                    displayState.display("结露：报警", StateColor.AlarmColor);
-                                }
-                                else
-                                {
-                                    displayState.display("结露：正常", StateColor.normalColor);
-                                }
-
-                                if (S1_bitArray[6] == 1)
+                                break;
+                            case "状态信息1":
                                 {
 
+                                    byte S1 = ((byte[])value)[0];
+                                    byte S2 = ((byte[])value)[1];
+
+                                    byte[] S1_bitArray = getBooleanArray(S1);
+                                    byte[] S2_bitArray = getBooleanArray(S2);
+
+                                 //   displayState.clearItem();
+                                    // 内外控指示，0 - 外控，1 - 内控
+                                    if (S1_bitArray[0] == 1)
+                                    {
+                                        displayState.display("控制模式：内控", StateColor.normalColor);
+                                        isInternalMode = true;
+                                        btnSetPower.Enabled = true;
+                                        btnEnableSwitch.Enabled = true;
+                                        btnRedlightSwitch.Enabled = true;
+                                        if (btnEnableSwitch.Checked)
+                                            btnWeldSwitch.Enabled = true;
+                                    }
+                                    else
+                                    {
+                                        displayState.display("控制模式：外控", StateColor.WarnColor);
+                                        isInternalMode = false;
+                                        btnSetPower.Enabled = false;
+                                        btnEnableSwitch.Enabled = false;
+                                        btnRedlightSwitch.Enabled = false;
+                                        btnWeldSwitch.Enabled = false;
+
+                                        setInternalMode();
+                                    }
+                                    // 激光器出光指示，0 - 没出光，1 - 出光
+                                    if (S1_bitArray[1] == 1)
+                                    {
+                                        //displayState.display("激光器出光：出光", StateColor.normalColor);
+                                        //labelLaser_Status.ForeColor = Color.Aqua;
+                                        //picLaser_Status.BackgroundImage = Properties.Resources.有;
+                                        //btnWeldSwitch.Checked = true;
+                                    }
+                                    else
+                                    {
+                                        //displayState.display("激光器出光：没出光", StateColor.ShutColor);
+                                        //labelLaser_Status.ForeColor = ThemeTextColor;
+                                        //picLaser_Status.BackgroundImage = Properties.Resources.无;
+                                        //btnWeldSwitch.Checked = false;
+                                    }
+                                    // 主电源启动指示，0 - 关闭，1 - 启动
+                                    if (S1_bitArray[2] == 1)
+                                    {
+                                        displayState.display("主电源：启动", StateColor.normalColor);
+                                        labelPower_Status.ForeColor = Color.Aqua;
+                                        picPower_Status.BackgroundImage = Properties.Resources.有;
+                                    }
+                                    else
+                                    {
+                                        displayState.display("主电源：关闭", StateColor.ShutColor);
+                                        labelPower_Status.ForeColor = ThemeTextColor;
+                                        picPower_Status.BackgroundImage = Properties.Resources.无;
+                                    }
+
+                                    if (S1_bitArray[3] == 1)
+                                    {
+
+                                    }
+                                    if (S1_bitArray[4] == 1)
+                                    {
+
+                                    }
+                                    // 结露指示，0 - 正常，1 - 报警
+                                    if (S1_bitArray[5] == 1)
+                                    {
+                                        displayState.display("结露：报警", StateColor.AlarmColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("结露：正常", StateColor.normalColor);
+                                    }
+
+                                    if (S1_bitArray[6] == 1)
+                                    {
+
+                                    }
+                                    if (S1_bitArray[7] == 1)
+                                    {
+
+                                    }
+
+                                    // 连续前向光锁机标志，0 - 未锁机，1 – 已锁机
+                                    if (S2_bitArray[0] == 1)
+                                    {
+                                        displayState.display("连续前向光锁机标志：已锁机", StateColor.WarnColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("连续前向光锁机标志：未锁机", StateColor.normalColor);
+                                    }
+                                    // 外控线EN，0 - 低电平，1 - 高电平
+                                    if (S2_bitArray[1] == 1)
+                                    {
+                                        displayState.display("外控线EN：高电平", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("外控线EN：低电平", StateColor.normalColor);
+                                    }
+                                    // 外控线调制PWM，0 - 低电平，1 - 高电平
+                                    if (S2_bitArray[2] == 1)
+                                    {
+                                        displayState.display("外控线调制PWM：高电平", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("外控线调制PWM：低电平", StateColor.normalColor);
+                                    }
+                                    // 外控线0～10V，0 - 低电平，1 - 高电平
+                                    if (S2_bitArray[3] == 1)
+                                    {
+                                        displayState.display("外控线0～10V：高电平", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("外控线0～10V：低电平", StateColor.normalColor);
+                                    }
+                                    // 外控线Control，0 - 低电平，1 - 高电平
+                                    if (S2_bitArray[4] == 1)
+                                    {
+                                        displayState.display("外控线Control：高电平", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("外控线Control：低电平", StateColor.normalColor);
+                                    }
+                                    // 连续QBH 温度锁机标志，0 - 未锁机，1 – 已锁机
+                                    if (S2_bitArray[5] == 1)
+                                    {
+                                        displayState.display("连续QBH 温度锁机标志：已锁机", StateColor.WarnColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("连续QBH 温度锁机标志：未锁机", StateColor.normalColor);
+                                    }
+                                    // 连续回光锁机标志，0 - 未锁机，1 – 已锁机
+                                    if (S2_bitArray[6] == 1)
+                                    {
+                                        displayState.display("连续回光锁机标志：已锁机", StateColor.WarnColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("连续回光锁机标志：未锁机", StateColor.normalColor);
+                                    }
+
+                                    if (S2_bitArray[7] == 1)
+                                    {
+
+                                    }
                                 }
-                                if (S1_bitArray[7] == 1)
+                                break;
+                            case "状态信息2":
                                 {
 
-                                }
+                                    byte S1 = ((byte[])value)[0];
+                                    byte S2 = ((byte[])value)[1];
 
-                                // 连续前向光锁机标志，0 - 未锁机，1 – 已锁机
-                                if (S2_bitArray[0] == 1)
-                                {
-                                    displayState.display("连续前向光锁机标志：已锁机", StateColor.WarnColor);
-                                }
-                                else
-                                {
-                                    displayState.display("连续前向光锁机标志：未锁机", StateColor.normalColor);
-                                }
-                                // 外控线EN，0 - 低电平，1 - 高电平
-                                if (S2_bitArray[1] == 1)
-                                {
-                                    displayState.display("外控线EN：高电平", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("外控线EN：低电平", StateColor.normalColor);
-                                }
-                                // 外控线调制PWM，0 - 低电平，1 - 高电平
-                                if (S2_bitArray[2] == 1)
-                                {
-                                    displayState.display("外控线调制PWM：高电平", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("外控线调制PWM：低电平", StateColor.normalColor);
-                                }
-                                // 外控线0～10V，0 - 低电平，1 - 高电平
-                                if (S2_bitArray[3] == 1)
-                                {
-                                    displayState.display("外控线0～10V：高电平", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("外控线0～10V：低电平", StateColor.normalColor);
-                                }
-                                // 外控线Control，0 - 低电平，1 - 高电平
-                                if (S2_bitArray[4] == 1)
-                                {
-                                    displayState.display("外控线Control：高电平", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("外控线Control：低电平", StateColor.normalColor);
-                                }
-                                // 连续QBH 温度锁机标志，0 - 未锁机，1 – 已锁机
-                                if (S2_bitArray[5] == 1)
-                                {
-                                    displayState.display("连续QBH 温度锁机标志：已锁机", StateColor.WarnColor);
-                                }
-                                else
-                                {
-                                    displayState.display("连续QBH 温度锁机标志：未锁机", StateColor.normalColor);
-                                }
-                                // 连续回光锁机标志，0 - 未锁机，1 – 已锁机
-                                if (S2_bitArray[6] == 1)
-                                {
-                                    displayState.display("连续回光锁机标志：已锁机", StateColor.WarnColor);
-                                }
-                                else
-                                {
-                                    displayState.display("连续回光锁机标志：未锁机", StateColor.normalColor);
-                                }
+                                    byte[] S1_bitArray = getBooleanArray(S1);
+                                    byte[] S2_bitArray = getBooleanArray(S2);
 
-                                if (S2_bitArray[7] == 1)
-                                {
+                                    if (S1_bitArray[0] == 1)
+                                    {
 
-                                }
-                            }
-                            break;
-                        case "状态信息2":
-                            {
+                                    }
+                                    // 激光器SD卡状态，0 未连接，1 已连接
+                                    if (S1_bitArray[1] == 1)
+                                    {
+                                        displayState.display("激光器SD卡状态：已连接", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("激光器SD卡状态：未连接", StateColor.WarnColor);
+                                    }
 
-                                byte S1 = ((byte[])value)[0];
-                                byte S2 = ((byte[])value)[1];
+                                    if (S1_bitArray[2] == 1)
+                                    {
 
-                                byte[] S1_bitArray = getBooleanArray(S1);
-                                byte[] S2_bitArray = getBooleanArray(S2);
+                                    }
+                                    // 激光器RTC状态，1 锁机，0 正常 （有加密数据，RTC 时间不正确）
+                                    if (S1_bitArray[3] == 1)
+                                    {
+                                        displayState.display("激光器RTC状态：锁机", StateColor.AlarmColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("激光器RTC状态：正常", StateColor.normalColor);
+                                    }
+                                    // 激光器互锁状态，0 未连接，1 已连接
+                                    if (S1_bitArray[4] == 1)
+                                    {
+                                        displayState.display("激光器互锁状态：已连接", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("激光器互锁状态：未连接", StateColor.ShutColor);
+                                    }
+                                    // 激光器后气动门/互锁 2 状态，0 未连接，1 已连接
+                                    if (S1_bitArray[5] == 1)
+                                    {
+                                        displayState.display("激光器后气动门/互锁：已连接", StateColor.normalColor);
+                                    }
+                                    else
+                                    {
+                                        displayState.display("激光器后气动门/互锁：未连接", StateColor.normalColor);
+                                    }
 
-                                displayState.clearItem();
-                              
-                                if (S1_bitArray[0] == 1)
-                                {
-                                    
-                                }
-                                // 激光器SD卡状态，0 未连接，1 已连接
-                                if (S1_bitArray[1] == 1)
-                                {
-                                    displayState.display("激光器SD卡状态：已连接", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("激光器SD卡状态：未连接", StateColor.WarnColor);
-                                }
-                               
-                                if (S1_bitArray[2] == 1)
-                                {
-                               
-                                }
-                                // 激光器RTC状态，1 锁机，0 正常 （有加密数据，RTC 时间不正确）
-                                if (S1_bitArray[3] == 1)
-                                {
-                                    displayState.display("激光器RTC状态：锁机", StateColor.AlarmColor);
-                                }
-                                else
-                                {
-                                    displayState.display("激光器RTC状态：正常", StateColor.normalColor);
-                                }
-                                // 激光器互锁状态，0 未连接，1 已连接
-                                if (S1_bitArray[4] == 1)
-                                {
-                                    displayState.display("激光器互锁状态：已连接", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("激光器互锁状态：未连接", StateColor.ShutColor);
-                                }
-                                // 激光器后气动门/互锁 2 状态，0 未连接，1 已连接
-                                if (S1_bitArray[5] == 1)
-                                {
-                                    displayState.display("激光器后气动门/互锁：已连接", StateColor.normalColor);
-                                }
-                                else
-                                {
-                                    displayState.display("激光器后气动门/互锁：未连接", StateColor.normalColor);
-                                }
+                                    if (S1_bitArray[6] == 1)
+                                    {
 
-                                if (S1_bitArray[6] == 1)
-                                {
+                                    }
+                                    if (S1_bitArray[7] == 1)
+                                    {
 
-                                }
-                                if (S1_bitArray[7] == 1)
-                                {
-
-                                }
+                                    }
 
 
-                            }
-                            break;
+                                }
+                                break;
+                            case "回复错误":
+                                {
+                                    byte S1 = ((byte[])value)[0];
+                                    byte[] S1_bitArray = getBooleanArray(S1);
+                                    string strEorr = "";
+                                    if (S1_bitArray[0] == 1)
+                                    {
+                                        strEorr += "激光器命令：校验码错误！\r\n";
+                                    }
+                                    if (S1_bitArray[0] == 1)
+                                    {
+                                        strEorr += "激光器命令：命令为只读！\r\n";
+                                    }
+                                    if (S1_bitArray[0] == 1)
+                                    {
+                                        strEorr += "激光器命令：未知命令码！\r\n";
+                                    }
 
-                    }
+                                    if(strEorr!= ErrorMsg)
+                                    {
+                                        ErrorMsg = strEorr;
+                                        if (ErrorMessageBox_Thread != null)
+                                        {
+                                            ErrorMessageBox_Thread.Abort();
+                                            ErrorMessageBox_Thread = null;
+                                        }
+                                        
+                                        ErrorMessageBox_Thread = new Thread(() => MessageBox.Show(ErrorMsg));
+                                        ErrorMessageBox_Thread.Start();
+                                        
+                                    }
+
+                                }
+                                break;
+
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -2743,6 +2921,8 @@ namespace 星链激光制管机控制软件
                 });
             }
         }
+        string ErrorMsg = "";
+        Thread ErrorMessageBox_Thread = null;
 
         /// <summary>
         /// 内控模式

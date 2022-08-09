@@ -30,9 +30,9 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea7 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend7 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series7 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.btn_close = new System.Windows.Forms.Button();
             this.btn_max = new System.Windows.Forms.Button();
@@ -45,6 +45,7 @@
             this.titlePanel1 = new CustomControl.TitlePanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.pictureBox6 = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -141,7 +142,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.flowLayoutPanel1.SuspendLayout();
             this.panel_top.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox7)).BeginInit();
@@ -314,6 +314,7 @@
             this.splitContainer1.BackColor = System.Drawing.Color.Transparent;
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel2;
+            this.splitContainer1.IsSplitterFixed = true;
             this.splitContainer1.Location = new System.Drawing.Point(0, 40);
             this.splitContainer1.Name = "splitContainer1";
             this.splitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -416,6 +417,17 @@
             this.panel4.Size = new System.Drawing.Size(304, 277);
             this.panel4.TabIndex = 32;
             // 
+            // textBox1
+            // 
+            this.textBox1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.textBox1.Location = new System.Drawing.Point(3, 59);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.textBox1.Size = new System.Drawing.Size(287, 205);
+            this.textBox1.TabIndex = 17;
+            this.textBox1.Visible = false;
+            // 
             // label8
             // 
             this.label8.AutoSize = true;
@@ -424,7 +436,7 @@
             this.label8.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label8.Location = new System.Drawing.Point(6, 26);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(96, 28);
+            this.label8.Size = new System.Drawing.Size(65, 20);
             this.label8.TabIndex = 12;
             this.label8.Text = "焊接影像";
             // 
@@ -520,7 +532,7 @@
             this.label_Angle_Y.ForeColor = System.Drawing.Color.Aqua;
             this.label_Angle_Y.Location = new System.Drawing.Point(97, 156);
             this.label_Angle_Y.Name = "label_Angle_Y";
-            this.label_Angle_Y.Size = new System.Drawing.Size(78, 28);
+            this.label_Angle_Y.Size = new System.Drawing.Size(78, 20);
             this.label_Angle_Y.TabIndex = 12;
             this.label_Angle_Y.Text = "0.0 °";
             this.label_Angle_Y.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -641,9 +653,9 @@
             this.label4.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.label4.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.label4.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
-            this.label4.Location = new System.Drawing.Point(97, 11);
+            this.label4.Location = new System.Drawing.Point(97, 19);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(78, 28);
+            this.label4.Size = new System.Drawing.Size(78, 20);
             this.label4.TabIndex = 15;
             this.label4.Text = "上下";
             // 
@@ -717,7 +729,7 @@
             this.label5.ForeColor = System.Drawing.Color.White;
             this.label5.Location = new System.Drawing.Point(23, 4);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(119, 24);
+            this.label5.Size = new System.Drawing.Size(81, 17);
             this.label5.TabIndex = 12;
             this.label5.Text = "间隔时长(ms)";
             // 
@@ -733,7 +745,7 @@
             this.cbxIntervalTime.Location = new System.Drawing.Point(23, 24);
             this.cbxIntervalTime.Margin = new System.Windows.Forms.Padding(5);
             this.cbxIntervalTime.Name = "cbxIntervalTime";
-            this.cbxIntervalTime.Size = new System.Drawing.Size(90, 32);
+            this.cbxIntervalTime.Size = new System.Drawing.Size(90, 25);
             this.cbxIntervalTime.TabIndex = 16;
             this.cbxIntervalTime.Text = "一直持续";
             // 
@@ -778,7 +790,7 @@
             this.label25.ForeColor = System.Drawing.Color.White;
             this.label25.Location = new System.Drawing.Point(13, 31);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(51, 24);
+            this.label25.Size = new System.Drawing.Size(36, 17);
             this.label25.TabIndex = 12;
             this.label25.Text = "红 光";
             // 
@@ -832,7 +844,7 @@
             this.txtPower.Name = "txtPower";
             this.txtPower.PasswordChar = '\0';
             this.txtPower.ReadOnly = false;
-            this.txtPower.Size = new System.Drawing.Size(100, 32);
+            this.txtPower.Size = new System.Drawing.Size(100, 24);
             this.txtPower.TabIndex = 13;
             this.txtPower.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtPower.TextModel = CustomControl.MTextBox.TextFormatModel.Integer;
@@ -848,7 +860,7 @@
             this.label7.ForeColor = System.Drawing.Color.White;
             this.label7.Location = new System.Drawing.Point(21, 7);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(110, 24);
+            this.label7.Size = new System.Drawing.Size(75, 17);
             this.label7.TabIndex = 12;
             this.label7.Text = "激光功率(%)";
             // 
@@ -872,7 +884,7 @@
             this.label26.ForeColor = System.Drawing.Color.White;
             this.label26.Location = new System.Drawing.Point(13, 28);
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(51, 24);
+            this.label26.Size = new System.Drawing.Size(36, 17);
             this.label26.TabIndex = 12;
             this.label26.Text = "使 能";
             // 
@@ -946,7 +958,7 @@
             this.label24.ForeColor = System.Drawing.Color.White;
             this.label24.Location = new System.Drawing.Point(18, 4);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(82, 24);
+            this.label24.Size = new System.Drawing.Size(56, 17);
             this.label24.TabIndex = 12;
             this.label24.Text = "管材特性";
             // 
@@ -960,13 +972,13 @@
             this.txtPipe.BorderThickness = 1;
             this.txtPipe.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txtPipe.Location = new System.Drawing.Point(20, 24);
-            this.txtPipe.Margin = new System.Windows.Forms.Padding(5, 5, 5, 5);
+            this.txtPipe.Margin = new System.Windows.Forms.Padding(5);
             this.txtPipe.MaxLength = 32767;
             this.txtPipe.MText = "";
             this.txtPipe.Name = "txtPipe";
             this.txtPipe.PasswordChar = '\0';
             this.txtPipe.ReadOnly = false;
-            this.txtPipe.Size = new System.Drawing.Size(100, 32);
+            this.txtPipe.Size = new System.Drawing.Size(100, 24);
             this.txtPipe.TabIndex = 26;
             this.txtPipe.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtPipe.TextModel = CustomControl.MTextBox.TextFormatModel.none;
@@ -1074,7 +1086,7 @@
             this.labelAirConditione_SwitchStatus.ForeColor = System.Drawing.Color.White;
             this.labelAirConditione_SwitchStatus.Location = new System.Drawing.Point(58, 19);
             this.labelAirConditione_SwitchStatus.Name = "labelAirConditione_SwitchStatus";
-            this.labelAirConditione_SwitchStatus.Size = new System.Drawing.Size(51, 24);
+            this.labelAirConditione_SwitchStatus.Size = new System.Drawing.Size(36, 17);
             this.labelAirConditione_SwitchStatus.TabIndex = 12;
             this.labelAirConditione_SwitchStatus.Text = "启 动";
             // 
@@ -1119,7 +1131,7 @@
             this.labelAirConditione_Humidity.ForeColor = System.Drawing.Color.White;
             this.labelAirConditione_Humidity.Location = new System.Drawing.Point(33, 19);
             this.labelAirConditione_Humidity.Name = "labelAirConditione_Humidity";
-            this.labelAirConditione_Humidity.Size = new System.Drawing.Size(78, 24);
+            this.labelAirConditione_Humidity.Size = new System.Drawing.Size(53, 17);
             this.labelAirConditione_Humidity.TabIndex = 12;
             this.labelAirConditione_Humidity.Text = "0.0%RH";
             // 
@@ -1228,7 +1240,7 @@
             this.labelAlarm_Status.ForeColor = System.Drawing.Color.White;
             this.labelAlarm_Status.Location = new System.Drawing.Point(33, 10);
             this.labelAlarm_Status.Name = "labelAlarm_Status";
-            this.labelAlarm_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelAlarm_Status.Size = new System.Drawing.Size(36, 17);
             this.labelAlarm_Status.TabIndex = 12;
             this.labelAlarm_Status.Text = "报 警";
             // 
@@ -1273,7 +1285,7 @@
             this.labelRedlight_Status.ForeColor = System.Drawing.Color.White;
             this.labelRedlight_Status.Location = new System.Drawing.Point(33, 10);
             this.labelRedlight_Status.Name = "labelRedlight_Status";
-            this.labelRedlight_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelRedlight_Status.Size = new System.Drawing.Size(36, 17);
             this.labelRedlight_Status.TabIndex = 12;
             this.labelRedlight_Status.Text = "红 光";
             // 
@@ -1298,7 +1310,7 @@
             this.labelLaser_Status.ForeColor = System.Drawing.Color.White;
             this.labelLaser_Status.Location = new System.Drawing.Point(58, 10);
             this.labelLaser_Status.Name = "labelLaser_Status";
-            this.labelLaser_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelLaser_Status.Size = new System.Drawing.Size(36, 17);
             this.labelLaser_Status.TabIndex = 12;
             this.labelLaser_Status.Text = "激 光";
             // 
@@ -1332,7 +1344,7 @@
             this.labelEnable_Status.ForeColor = System.Drawing.Color.White;
             this.labelEnable_Status.Location = new System.Drawing.Point(58, 10);
             this.labelEnable_Status.Name = "labelEnable_Status";
-            this.labelEnable_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelEnable_Status.Size = new System.Drawing.Size(36, 17);
             this.labelEnable_Status.TabIndex = 12;
             this.labelEnable_Status.Text = "使 能";
             // 
@@ -1366,7 +1378,7 @@
             this.labelComm_Status.ForeColor = System.Drawing.Color.White;
             this.labelComm_Status.Location = new System.Drawing.Point(58, 10);
             this.labelComm_Status.Name = "labelComm_Status";
-            this.labelComm_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelComm_Status.Size = new System.Drawing.Size(36, 17);
             this.labelComm_Status.TabIndex = 12;
             this.labelComm_Status.Text = "通 讯";
             // 
@@ -1400,7 +1412,7 @@
             this.labelPower_Status.ForeColor = System.Drawing.Color.White;
             this.labelPower_Status.Location = new System.Drawing.Point(34, 10);
             this.labelPower_Status.Name = "labelPower_Status";
-            this.labelPower_Status.Size = new System.Drawing.Size(51, 24);
+            this.labelPower_Status.Size = new System.Drawing.Size(36, 17);
             this.labelPower_Status.TabIndex = 12;
             this.labelPower_Status.Text = "电 源";
             // 
@@ -1472,7 +1484,7 @@
             this.label27.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label27.Location = new System.Drawing.Point(72, 110);
             this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(96, 28);
+            this.label27.Size = new System.Drawing.Size(65, 20);
             this.label27.TabIndex = 12;
             this.label27.Text = "激光功率";
             // 
@@ -1539,7 +1551,7 @@
             this.labelWaterTank_SwitchStatus.ForeColor = System.Drawing.Color.White;
             this.labelWaterTank_SwitchStatus.Location = new System.Drawing.Point(58, 19);
             this.labelWaterTank_SwitchStatus.Name = "labelWaterTank_SwitchStatus";
-            this.labelWaterTank_SwitchStatus.Size = new System.Drawing.Size(51, 24);
+            this.labelWaterTank_SwitchStatus.Size = new System.Drawing.Size(36, 17);
             this.labelWaterTank_SwitchStatus.TabIndex = 12;
             this.labelWaterTank_SwitchStatus.Text = "启 动";
             // 
@@ -1584,7 +1596,7 @@
             this.labelWaterTank_Temperature.ForeColor = System.Drawing.Color.White;
             this.labelWaterTank_Temperature.Location = new System.Drawing.Point(33, 19);
             this.labelWaterTank_Temperature.Name = "labelWaterTank_Temperature";
-            this.labelWaterTank_Temperature.Size = new System.Drawing.Size(54, 24);
+            this.labelWaterTank_Temperature.Size = new System.Drawing.Size(37, 17);
             this.labelWaterTank_Temperature.TabIndex = 12;
             this.labelWaterTank_Temperature.Text = "0.0℃";
             // 
@@ -1661,7 +1673,7 @@
             this.label31.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label31.Location = new System.Drawing.Point(418, 145);
             this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(32, 28);
+            this.label31.Size = new System.Drawing.Size(22, 20);
             this.label31.TabIndex = 12;
             this.label31.Text = "m";
             // 
@@ -1673,7 +1685,7 @@
             this.label10.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label10.Location = new System.Drawing.Point(5, 12);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(117, 28);
+            this.label10.Size = new System.Drawing.Size(79, 20);
             this.label10.TabIndex = 12;
             this.label10.Text = "焊接质量：";
             // 
@@ -1686,7 +1698,7 @@
             this.label30.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label30.Location = new System.Drawing.Point(418, 56);
             this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(32, 28);
+            this.label30.Size = new System.Drawing.Size(22, 20);
             this.label30.TabIndex = 12;
             this.label30.Text = "m";
             // 
@@ -1699,7 +1711,7 @@
             this.label16.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label16.Location = new System.Drawing.Point(270, 12);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(159, 28);
+            this.label16.Size = new System.Drawing.Size(107, 20);
             this.label16.TabIndex = 12;
             this.label16.Text = "目前焊接长度：";
             // 
@@ -1712,7 +1724,7 @@
             this.label29.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.label29.Location = new System.Drawing.Point(270, 101);
             this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(159, 28);
+            this.label29.Size = new System.Drawing.Size(107, 20);
             this.label29.TabIndex = 12;
             this.label29.Text = "累计焊接长度：";
             // 
@@ -1761,54 +1773,54 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.chart1.BackColor = System.Drawing.Color.Transparent;
-            chartArea7.AxisX.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.False;
-            chartArea7.AxisX.LabelStyle.Enabled = false;
-            chartArea7.AxisX.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
-            chartArea7.AxisX.LineWidth = 2;
-            chartArea7.AxisX.MajorGrid.LineColor = System.Drawing.Color.LightGray;
-            chartArea7.AxisX.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
-            chartArea7.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
-            chartArea7.AxisX.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.None;
-            chartArea7.AxisX.Maximum = 200D;
-            chartArea7.AxisX.Minimum = 0D;
-            chartArea7.AxisY.LabelStyle.Enabled = false;
-            chartArea7.AxisY.LineColor = System.Drawing.Color.White;
-            chartArea7.AxisY.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
-            chartArea7.AxisY.LineWidth = 2;
-            chartArea7.AxisY.MajorGrid.LineColor = System.Drawing.Color.LightGray;
-            chartArea7.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
-            chartArea7.AxisY.MajorTickMark.LineColor = System.Drawing.Color.DimGray;
-            chartArea7.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.None;
-            chartArea7.AxisY2.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
-            chartArea7.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(46)))), ((int)(((byte)(62)))));
-            chartArea7.Name = "ChartArea1";
-            chartArea7.Position.Auto = false;
-            chartArea7.Position.Height = 100F;
-            chartArea7.Position.Width = 100F;
-            this.chart1.ChartAreas.Add(chartArea7);
-            legend7.BackColor = System.Drawing.Color.Transparent;
-            legend7.DockedToChartArea = "ChartArea1";
-            legend7.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            legend7.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
-            legend7.IsTextAutoFit = false;
-            legend7.MaximumAutoSize = 30F;
-            legend7.Name = "Legend1";
-            legend7.TitleFont = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.chart1.Legends.Add(legend7);
+            chartArea1.AxisX.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.False;
+            chartArea1.AxisX.LabelStyle.Enabled = false;
+            chartArea1.AxisX.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
+            chartArea1.AxisX.LineWidth = 2;
+            chartArea1.AxisX.MajorGrid.LineColor = System.Drawing.Color.LightGray;
+            chartArea1.AxisX.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
+            chartArea1.AxisX.MajorTickMark.LineColor = System.Drawing.Color.Gainsboro;
+            chartArea1.AxisX.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.None;
+            chartArea1.AxisX.Maximum = 200D;
+            chartArea1.AxisX.Minimum = 0D;
+            chartArea1.AxisY.LabelStyle.Enabled = false;
+            chartArea1.AxisY.LineColor = System.Drawing.Color.White;
+            chartArea1.AxisY.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
+            chartArea1.AxisY.LineWidth = 2;
+            chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.LightGray;
+            chartArea1.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
+            chartArea1.AxisY.MajorTickMark.LineColor = System.Drawing.Color.DimGray;
+            chartArea1.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.None;
+            chartArea1.AxisY2.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.NotSet;
+            chartArea1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(46)))), ((int)(((byte)(62)))));
+            chartArea1.Name = "ChartArea1";
+            chartArea1.Position.Auto = false;
+            chartArea1.Position.Height = 100F;
+            chartArea1.Position.Width = 100F;
+            this.chart1.ChartAreas.Add(chartArea1);
+            legend1.BackColor = System.Drawing.Color.Transparent;
+            legend1.DockedToChartArea = "ChartArea1";
+            legend1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            legend1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
+            legend1.IsTextAutoFit = false;
+            legend1.MaximumAutoSize = 30F;
+            legend1.Name = "Legend1";
+            legend1.TitleFont = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(0, 30);
             this.chart1.Name = "chart1";
             this.chart1.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.EarthTones;
             this.chart1.PaletteCustomColors = new System.Drawing.Color[] {
         System.Drawing.Color.Aqua};
-            series7.BorderWidth = 2;
-            series7.ChartArea = "ChartArea1";
-            series7.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series7.Color = System.Drawing.Color.Aqua;
-            series7.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            series7.LabelBorderWidth = 2;
-            series7.Legend = "Legend1";
-            series7.Name = "焊缝轨迹";
-            this.chart1.Series.Add(series7);
+            series1.BorderWidth = 2;
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Color = System.Drawing.Color.Aqua;
+            series1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            series1.LabelBorderWidth = 2;
+            series1.Legend = "Legend1";
+            series1.Name = "焊缝轨迹";
+            this.chart1.Series.Add(series1);
             this.chart1.Size = new System.Drawing.Size(463, 140);
             this.chart1.TabIndex = 10;
             this.chart1.Text = "chart1";
@@ -1822,7 +1834,7 @@
             this.label9.ForeColor = System.Drawing.Color.White;
             this.label9.Location = new System.Drawing.Point(315, 8);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(118, 24);
+            this.label9.Size = new System.Drawing.Size(80, 17);
             this.label9.TabIndex = 12;
             this.label9.Text = "焊缝轨迹跟踪";
             // 
@@ -1834,7 +1846,7 @@
             this.labelCurrMachineTime.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(79)))), ((int)(((byte)(178)))), ((int)(((byte)(255)))));
             this.labelCurrMachineTime.Location = new System.Drawing.Point(6, 8);
             this.labelCurrMachineTime.Name = "labelCurrMachineTime";
-            this.labelCurrMachineTime.Size = new System.Drawing.Size(245, 24);
+            this.labelCurrMachineTime.Size = new System.Drawing.Size(166, 17);
             this.labelCurrMachineTime.TabIndex = 12;
             this.labelCurrMachineTime.Text = "XXXX年XX月XX日 XX:XX:XX";
             // 
@@ -1866,7 +1878,7 @@
             this.label_AlarmInfo.ForeColor = System.Drawing.Color.Red;
             this.label_AlarmInfo.Location = new System.Drawing.Point(425, 10);
             this.label_AlarmInfo.Name = "label_AlarmInfo";
-            this.label_AlarmInfo.Size = new System.Drawing.Size(59, 24);
+            this.label_AlarmInfo.Size = new System.Drawing.Size(40, 17);
             this.label_AlarmInfo.TabIndex = 4;
             this.label_AlarmInfo.Text = " 1111";
             // 
@@ -1878,7 +1890,7 @@
             this.label2.ForeColor = System.Drawing.Color.White;
             this.label2.Location = new System.Drawing.Point(892, 10);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(181, 24);
+            this.label2.Size = new System.Drawing.Size(124, 17);
             this.label2.TabIndex = 3;
             this.label2.Text = "版权所有 © 翻版必究";
             // 
@@ -1901,7 +1913,7 @@
             this.label1.ForeColor = System.Drawing.Color.White;
             this.label1.Location = new System.Drawing.Point(14, 10);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(269, 24);
+            this.label1.Size = new System.Drawing.Size(181, 17);
             this.label1.TabIndex = 2;
             this.label1.Text = "星链激光制管机控制软件 1.0.0.1";
             // 
@@ -1918,17 +1930,6 @@
             // timer1
             // 
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
-            // textBox1
-            // 
-            this.textBox1.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.textBox1.Location = new System.Drawing.Point(3, 59);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox1.Size = new System.Drawing.Size(287, 205);
-            this.textBox1.TabIndex = 17;
-            this.textBox1.Visible = false;
             // 
             // MainForm
             // 

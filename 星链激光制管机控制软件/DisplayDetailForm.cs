@@ -18,7 +18,7 @@ namespace 星链激光制管机控制软件
             label1.Text = tilte;
         }
 
-     
+
 
         private void DisplayDetailForm_Load(object sender, EventArgs e)
         {
@@ -69,7 +69,7 @@ namespace 星链激光制管机控制软件
         /// <returns></returns>
         public bool isEmpty()
         {
-            if(flowLayoutPanel1.Controls.Count>0)
+            if (flowLayoutPanel1.Controls.Count > 0)
             {
                 return false;
             }
@@ -78,32 +78,69 @@ namespace 星链激光制管机控制软件
                 return true;
             }
         }
+
+        /// <summary>
+        /// 显示该信息
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="color"></param>
         public void display(string item, Color color)
         {
-                Label lbl = new Label();
-                lbl.ForeColor = color;
-                lbl.Text = item;
-                lbl.AutoSize = false;
-                lbl.Size = new Size(175, 25);
-                lbl.Font = new Font("微软雅黑", 9);
-                flowLayoutPanel1.Controls.Add(lbl);
+            string name = item.Split('：')[0];
+
+            foreach (Control con in flowLayoutPanel1.Controls)
+            {
+                if (con.Name.Equals(name))
+                {
+                    con.Text = item;
+                    con.ForeColor = color;
+                    return;
+                }
+            }
+
+            Label lbl = new Label();
+            lbl.Name = name;
+            lbl.ForeColor = color;
+            lbl.Text = item;
+            lbl.AutoSize = false;
+            lbl.Size = new Size(175, 25);
+            lbl.Font = new Font("微软雅黑", 9);
+            flowLayoutPanel1.Controls.Add(lbl);
+
+        }
 
 
+        /// <summary>
+        /// 删除该信息
+        /// </summary>
+        /// <param name="item"></param>
+        public void delete(string item)
+        {
+            string name = item.Split('：')[0];
+
+            foreach (Control con in flowLayoutPanel1.Controls)
+            {
+                if (con.Name.Equals(name))
+                {
+                    flowLayoutPanel1.Controls.Remove(con);
+                    return;
+                }
+            }
         }
 
         public void resize(int width, int height)
         {
-            if(width>370)
+            if (width > 370)
             {
                 this.Width = 370;
-                this.Height = (int)Math.Ceiling(flowLayoutPanel1.Controls.Count / 2f) * 25 + label1.Height + 10;               
+                this.Height = (int)Math.Ceiling(flowLayoutPanel1.Controls.Count / 2f) * 25 + label1.Height + 10;
             }
             else
             {
                 this.Width = 180;
                 this.Height = flowLayoutPanel1.Controls.Count * 25 + label1.Height + 10;
             }
-              
+
         }
     }
     /// <summary>
