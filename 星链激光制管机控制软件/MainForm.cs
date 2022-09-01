@@ -476,11 +476,11 @@ namespace 星链激光制管机控制软件
                 Common.SendQueue_PC.Enqueue(m_SendAryPC);
                 continuityMoveFlag = true;
             }
-            else
-            {
-                byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, moveMode, move_Direction);
-                Common.SendQueue_PC.Enqueue(m_SendAryPC);
-            }
+            // else
+            // {
+            //     byte[] m_SendAryPC = Common.generateSendData(Global.ContrlBoard_Commands.DataHead_sendContrlBoard, Global.ContrlBoard_Commands.Address_ContrlBoard, moveMode, move_Direction);
+            //     Common.SendQueue_PC.Enqueue(m_SendAryPC);
+            // }
         }
 
         #endregion
