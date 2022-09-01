@@ -1596,6 +1596,13 @@ namespace 星链激光制管机控制软件
 
                                     laserConnect = true;
                                     notLaserCommCount = 0;
+                                    if (this.IsHandleCreated)
+                                    {
+                                        this.Invoke((EventHandler)delegate
+                                        {
+                                            label_AlarmInfo.Text = "";
+                                        });
+                                    }
 
                                 }
                                 else
